@@ -80,7 +80,7 @@ class RequestProxy(
         "pathParams" -> ProxyObject.fromMap(req.pathParams)
         "queryParams" -> ProxyObject.fromMap(req.queryParams)
         "formParams" -> ProxyObject.fromMap(req.formParams)
-        "body" -> req.body
+        "body" -> req.bodyAsString
         "normalisedHeaders" -> {
             val h = CollectionUtil.convertKeysToLowerCase(req.headers)
             ProxyObject.fromMap(h)

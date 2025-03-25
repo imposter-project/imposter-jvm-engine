@@ -55,17 +55,43 @@ import java.nio.file.Paths
  * @author Pete Cornish
  */
 object ScriptUtil {
+    /**
+     * Environment variable name for configuring the number of script cache entries.
+     */
     const val ENV_SCRIPT_CACHE_ENTRIES = "IMPOSTER_SCRIPT_CACHE_ENTRIES"
+
+    /**
+     * Default number of script cache entries if not specified by environment variable.
+     */
     const val DEFAULT_SCRIPT_CACHE_ENTRIES = 20L
 
+    /**
+     * Flag indicating whether scripts should be precompiled.
+     * Determined by the `IMPOSTER_SCRIPT_PRECOMPILE` environment variable.
+     * Defaults to true if the environment variable is not set.
+     */
     val shouldPrecompile = EnvVars.getEnv("IMPOSTER_SCRIPT_PRECOMPILE")?.toBoolean() != false
 
     private val forceHeaderKeyNormalisation =
         EnvVars.getEnv("IMPOSTER_NORMALISE_HEADER_KEYS")?.toBoolean() != false
 
+    /**
+     * Resolves the absolute path to a script file based on the plugin configuration directory.
+     *
+     * @param pluginConfig The plugin configuration containing the base directory
+     * @param scriptFile The relative path or name of the script file
+     * @return The absolute Path to the script file
+     */
     fun resolveScriptPath(pluginConfig: PluginConfig, scriptFile: String?): Path =
         Paths.get(pluginConfig.dir.absolutePath, scriptFile!!)
 
+    /**
+     * Processes HTTP headers from a request, optionally normalising header keys to lowercase.
+     * The normalisation behaviour is controlled by the `IMPOSTER_NORMALISE_HEADER_KEYS` environment variable.
+     *
+     * @param request The HTTP request containing headers to process
+     * @return A map of header names to values, with keys potentially normalised to lowercase
+     */
     fun caseHeaders(request: HttpRequest): Map<String, String> {
         val entries = request.headers
         return if (forceHeaderKeyNormalisation) {
