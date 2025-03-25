@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.3] - 2025-03-25
+### Changed
+- chore(deps): bump actions/setup-python from 5.4.0 to 5.5.0
+- docs: links to public ECR gallery page.
+- docs: lists ECR registry for Docker images.
+
+### Fixed
+- fix(graal): request proxy should return body as a string.
+
 ## [4.6.2] - 2025-03-10
 ### Changed
 - ci: adds timeouts to jobs.
