@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.4] - 2025-03-31
+### Changed
+- refactor: removes identity check when resolving placeholders.
+
 ## [4.6.3] - 2025-03-25
 ### Changed
 - chore(deps): bump actions/setup-python from 5.4.0 to 5.5.0
