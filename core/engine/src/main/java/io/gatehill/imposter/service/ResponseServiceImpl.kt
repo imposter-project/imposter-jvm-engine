@@ -263,9 +263,7 @@ class ResponseServiceImpl @Inject constructor(
 
         val original = responseData.toString(Charsets.UTF_8)
         val evaluated = PlaceholderUtil.replace(original, httpExchange, PlaceholderUtil.templateEvaluators)
-
-        // only rebuffer if changed
-        return if (evaluated === original) responseData else Buffer.buffer(evaluated)
+        return Buffer.buffer(evaluated)
     }
 
     private fun fallback(
