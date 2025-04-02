@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.5] - 2025-04-02
+### Changed
+- build: update log4j and slf4j dependencies to version 2.20.0 and 2.0.11.
+
 ## [4.6.4] - 2025-03-31
 ### Changed
 - refactor: removes identity check when resolving placeholders.
