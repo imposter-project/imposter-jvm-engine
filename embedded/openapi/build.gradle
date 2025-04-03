@@ -1,10 +1,6 @@
 apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
-compileJava {
-    sourceCompatibility = JavaVersion.VERSION_11
-}
-
 dependencies {
     api project (':embedded:embedded-core')
     implementation project (':mock:mock-openapi')

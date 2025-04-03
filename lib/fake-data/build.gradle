@@ -10,10 +10,6 @@ ext {
     version_swagger_models = '2.2.22'
 }
 
-compileJava {
-    sourceCompatibility = JavaVersion.VERSION_11
-}
-
 dependencies {
     implementation project(':core:imposter-engine')
     implementation project(':mock:mock-openapi')
@@ -56,23 +52,6 @@ publishing {
     }
 }
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
-
-        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
-        freeCompilerArgs = ["-Xjvm-default=all"]
-    }
-}
-
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
-
-        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
-        freeCompilerArgs = ["-Xjvm-default=all"]
-    }
-}
 
 shadowJar {
     // override plugin archive name

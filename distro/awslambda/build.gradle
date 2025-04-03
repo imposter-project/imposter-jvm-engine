@@ -1,9 +1,5 @@
 apply plugin: 'java'
 
-compileJava {
-    sourceCompatibility = JavaVersion.VERSION_11
-}
-
 dependencies {
     implementation project (':adapter:adapter-awslambda')
 }
