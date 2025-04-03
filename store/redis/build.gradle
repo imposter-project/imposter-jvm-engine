@@ -3,10 +3,6 @@ apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 apply plugin: 'com.gradleup.shadow'
 
-compileJava {
-    sourceCompatibility = JavaVersion.VERSION_11
-}
-
 dependencies {
     implementation project(':store:store-common')
     pluginImplementation 'org.redisson:redisson:3.17.7'
@@ -44,23 +40,6 @@ publishing {
     }
 }
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
-
-        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
-        freeCompilerArgs = ["-Xjvm-default=all"]
-    }
-}
-
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
-
-        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
-        freeCompilerArgs = ["-Xjvm-default=all"]
-    }
-}
 
 shadowJar {
     archiveBaseName.set("imposter-plugin-${project.name}")

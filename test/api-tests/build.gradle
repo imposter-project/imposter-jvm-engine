@@ -4,10 +4,6 @@ ext {
     version_restassured = '5.3.2'
 }
 
-compileJava {
-    sourceCompatibility = JavaVersion.VERSION_11
-}
-
 dependencies {
     api "io.rest-assured:rest-assured:$version_restassured"
     constraints {

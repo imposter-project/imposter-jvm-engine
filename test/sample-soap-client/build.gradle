@@ -1,9 +1,5 @@
 apply plugin: 'java-library'
 
-compileJava {
-    sourceCompatibility = JavaVersion.VERSION_11
-}
-
 dependencies {
     api 'jakarta.xml.ws:jakarta.xml.ws-api:4.0.0'
     implementation 'com.sun.xml.ws:jaxws-rt:4.0.1'

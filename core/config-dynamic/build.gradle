@@ -6,10 +6,6 @@ ext {
     version_classgraph = '4.8.163'
 }
 
-compileJava {
-    sourceCompatibility = JavaVersion.VERSION_11
-}
-
 dependencies {
     implementation project(':core:imposter-api')
     implementation project(':core:config')
@@ -53,23 +49,6 @@ publishing {
     }
 }
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
-
-        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
-        freeCompilerArgs = ["-Xjvm-default=all"]
-    }
-}
-
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
-
-        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
-        freeCompilerArgs = ["-Xjvm-default=all"]
-    }
-}
 
 test {
     useJUnitPlatform()

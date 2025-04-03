@@ -1,10 +1,6 @@
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
-compileJava {
-    sourceCompatibility = JavaVersion.VERSION_11
-}
-
 dependencies {
     api project(':core:imposter-engine')
     api project(':imposter-server')
@@ -30,20 +26,3 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$version_coroutines")
 }
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
-
-        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
-        freeCompilerArgs = ["-Xjvm-default=all"]
-    }
-}
-
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
-
-        // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#default-methods-in-interfaces
-        freeCompilerArgs = ["-Xjvm-default=all"]
-    }
-}
