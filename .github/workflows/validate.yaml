@@ -41,3 +41,11 @@ jobs:
           files: "**/test-results/**/*.xml"
           comment_mode: off
           check_name: Unit Tests (Java ${{ matrix.java }})
+          
+      - name: Upload Test Reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-java-${{ matrix.java }}
+          path: "**/build/reports/tests/test"
+          if-no-files-found: ignore
