@@ -47,6 +47,35 @@ import java.io.IOException
 import java.net.ServerSocket
 
 object HttpTestUtil {
+    private val allocatedPorts = mutableSetOf<Int>()
+    private val lock = Any()
+
     @Throws(IOException::class)
-    fun findFreePort() = ServerSocket(0).use { it.localPort }
+    fun findFreePort(): Int {
+        synchronized(lock) {
+            var port: Int
+            var attempts = 0
+            val maxAttempts = 10
+            
+            do {
+                port = ServerSocket(0).use { it.localPort }
+                if (allocatedPorts.contains(port)) {
+                    attempts++
+                    if (attempts >= maxAttempts) {
+                        throw IOException("Failed to find a free port after $maxAttempts attempts")
+                    }
+                    Thread.sleep(50)
+                }
+            } while (allocatedPorts.contains(port))
+            
+            allocatedPorts.add(port)
+            return port
+        }
+    }
+
+    fun releasePort(port: Int) {
+        synchronized(lock) {
+            allocatedPorts.remove(port)
+        }
+    }
 }
