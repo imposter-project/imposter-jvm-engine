@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.7] - 2025-04-09
+### Changed
+- ci: attach test failure reports to job.
+- test: reduce chance of duplicate free port allocation.
+- test: use a test store to hold remote server port.
+
 ## [4.6.6] - 2025-04-09
 ### Changed
 - test: fixes flaky remote steps test.
