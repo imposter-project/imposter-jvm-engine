@@ -155,7 +155,7 @@ function require(moduleName) {
     }
 
     private fun buildWrappedScript(script: String, setGlobalDslObjects: Boolean): WrappedScript {
-        val addCjsRequireShim = script.contains("@imposter-js/types")
+        val addCjsRequireShim = arrayOf("@imposter-js/types", "__imposter_types").any(script::contains)
 
         val preScript = """
 /* ------------------------------------------------------------------------- */
