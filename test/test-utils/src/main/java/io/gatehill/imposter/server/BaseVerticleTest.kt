@@ -51,6 +51,7 @@ import io.gatehill.imposter.server.engine.GoMockEngine
 import io.gatehill.imposter.server.engine.JvmMockEngine
 import io.gatehill.imposter.server.engine.TestMockEngine
 import io.gatehill.imposter.server.vertxweb.VertxWebServerFactoryImpl
+import io.gatehill.imposter.util.HttpTestUtil
 import io.vertx.core.Vertx
 import io.vertx.junit5.VertxExtension
 import io.vertx.junit5.VertxTestContext
@@ -60,7 +61,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import java.io.IOException
-import java.net.ServerSocket
 import java.nio.file.Paths
 
 /**
@@ -115,7 +115,7 @@ abstract class BaseVerticleTest {
     }
 
     @Throws(IOException::class)
-    private fun findFreePort() = ServerSocket(0).use { it.localPort }
+    private fun findFreePort() = HttpTestUtil.findFreePort()
 
     val listenPort: Int
         get() = ConfigHolder.config.listenPort

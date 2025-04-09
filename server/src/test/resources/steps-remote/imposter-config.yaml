@@ -5,7 +5,7 @@ resources:
     method: GET
     steps:
       - type: remote
-        url: http://localhost:8081
+        url: "http://localhost:${env.REMOTE_SERVER_PORT}"
         method: POST
         queryParams:
           petId: "${context.request.queryParams.petId}"

@@ -42,7 +42,9 @@
  */
 package io.gatehill.imposter.server
 
+import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.plugin.test.TestPluginImpl
+import io.gatehill.imposter.util.HttpTestUtil
 import io.restassured.RestAssured
 import io.restassured.RestAssured.given
 import io.vertx.core.Handler
@@ -85,22 +87,6 @@ class StepsRemoteTest : BaseVerticleTest() {
      */
     @Test
     fun `execute remote step`() {
-        val httpServer = vertx!!.createHttpServer(HttpServerOptions().setPort(8081))
-        httpServer.requestHandler { request ->
-            request.failOnAssertionError(request.method(), equalTo(HttpMethod.POST))
-            request.failOnAssertionError(request.path(), equalTo("/"))
-            request.failOnAssertionError(request.query(), equalTo("petId=123"))
-            request.failOnAssertionError(request.getHeader("X-Test-Header"), equalTo("test"))
-            request.body { body ->
-                request.failOnAssertionError(
-                    body.result().toString(),
-                    equalTo("""{ "type": "cat" }"""),
-                )
-                request.response().end("Fluffy")
-            }
-        }
-        blockWait { listenHandler -> httpServer.listen(listenHandler) }
-
         given().`when`()
             .queryParam("petId", "123")
             .get("/example")
@@ -109,32 +95,62 @@ class StepsRemoteTest : BaseVerticleTest() {
             .body(equalTo("Fluffy"))
     }
 
-    private fun <T> HttpServerRequest.failOnAssertionError(
-        actual: T,
-        assertion: Matcher<in T>,
-    ) {
-        try {
-            assertThat(actual, assertion)
-        } catch (e: AssertionError) {
-            response().setStatusCode(400).end(e.message)
-            throw e
-        }
-    }
-
     companion object {
         private var vertx: Vertx? = null
+        private var remoteServer: io. vertx. core. http.HttpServer? = null
 
         @JvmStatic
         @BeforeAll
         fun beforeClass() {
             vertx = Vertx.vertx()
+            startRemoteServer()
+        }
+
+        private fun startRemoteServer() {
+            val remoteServerPort = HttpTestUtil.findFreePort()
+            EnvVars.populate("REMOTE_SERVER_PORT" to remoteServerPort.toString())
+
+            val httpServer = vertx!!.createHttpServer(HttpServerOptions().setPort(remoteServerPort))
+            httpServer.requestHandler { request ->
+                println("Received remote request: $request")
+                request.failOnAssertionError(request.method(), equalTo(HttpMethod.POST))
+                request.failOnAssertionError(request.path(), equalTo("/"))
+                request.failOnAssertionError(request.query(), equalTo("petId=123"))
+                request.failOnAssertionError(request.getHeader("X-Test-Header"), equalTo("test"))
+                request.body { body ->
+                    request.failOnAssertionError(
+                        body.result().toString(),
+                        equalTo("""{ "type": "cat" }"""),
+                    )
+                    request.response().end("Fluffy")
+                }
+            }.also { server ->
+                blockWait(server::listen)
+            }
+            remoteServer = httpServer
         }
 
         @JvmStatic
         @AfterAll
         @Throws(Exception::class)
         fun afterClass() {
-            vertx?.close()
+            try {
+                remoteServer?.close()
+            } finally {
+                vertx?.close()
+            }
+        }
+
+        private fun <T> HttpServerRequest.failOnAssertionError(
+            actual: T,
+            assertion: Matcher<in T>,
+        ) {
+            try {
+                assertThat(actual, assertion)
+            } catch (e: AssertionError) {
+                response().setStatusCode(400).end(e.message)
+                throw e
+            }
         }
 
         /**
