@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.6] - 2025-04-09
+### Changed
+- test: fixes flaky remote steps test.
+
+### Fixed
+- fix: CommonJS require shim should detect use of __imposter_types external.
+
 ## [4.6.5] - 2025-04-02
 ### Changed
 - build: update log4j and slf4j dependencies to version 2.20.0 and 2.0.11.
