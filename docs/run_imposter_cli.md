@@ -40,8 +40,20 @@ You must have [Docker](https://docs.docker.com/get-docker/) or a JVM installed.
 
 If you have Homebrew installed:
 
-    brew tap gatehill/imposter
+    brew tap imposter-project/imposter
     brew install imposter
+
+<details markdown>
+<summary>Homebrew installation troubleshooting</summary>
+
+If you previously installed Imposter using Homebrew from the deprecated tap `gatehill/imposter`, you may need to run the following command to update your Homebrew installation:
+
+```shell
+brew untap gatehill/imposter
+brew tap imposter-project/imposter
+```
+
+</details>
 
 ### Shell script
 
