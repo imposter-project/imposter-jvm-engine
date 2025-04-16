@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.6.8] - 2025-04-16
+### Changed
+- build: adds JVM argument to open java.lang package for tests.
+- chore(deps): bump org.mockito:mockito-core from 5.2.0 to 5.16.0
+- chore(deps): bump version_jackson from 2.18.0 to 2.18.3
+- chore(deps): bump version_jackson_databind from 2.18.0 to 2.18.3
+- chore(deps): bump version_mockito to 5.17.0 and version_mockito_kotlin to 5.4.0.
+- ci: adds Java 21 (LTS) to CI test targets.
+- ci: adds step level timeout to integration test.
+- docs: updates Homebrew tap repo.
+
 ## [4.6.7] - 2025-04-09
 ### Changed
 - ci: attach test failure reports to job.
