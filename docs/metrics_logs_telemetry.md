@@ -89,6 +89,39 @@ Imposter can log a JSON summary of each request, such as the following:
 
 To enable this, set the environment variable `IMPOSTER_LOG_SUMMARY=true`.
 
+### Resource and interceptor logging
+
+Resources and interceptors can include custom log messages that are processed using the template engine. This allows you to log contextual information about requests that match your resources.
+
+Add a `log` property to any resource or interceptor:
+
+```yaml
+plugin: rest
+resources:
+  - path: /users/{id}
+    method: GET
+    log: "User lookup for ID: ${context.request.pathParams.id} from ${context.request.headers.X-Client-ID:-unknown client}"
+    response:
+      content: '{"id": "${context.request.pathParams.id}", "name": "Test User"}'
+      statusCode: 200
+      template: true
+
+interceptors:
+  - path: /secured/*
+    method: GET
+    log: "Secured endpoint accessed by ${context.request.headers.User-Agent} with trace ID: ${context.request.headers.X-Trace-ID:-none provided}"
+    response:
+      statusCode: 401
+      content: "Unauthorized"
+    continue: false
+```
+
+The log message supports all template features including:
+- Path parameters, query parameters, and headers from the request
+- Random data generation and date/time functions
+- Default values with the `:-` syntax
+- JSON and XML processing with JSONPath and XPath
+
 #### Logging request/response headers
 
 You can optionally include request and response headers in the JSON summary such as:
