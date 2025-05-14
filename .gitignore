@@ -12,3 +12,4 @@ node_modules/
 .imposter
 bin/
 /.vscode/
+/CLAUDE.md
