@@ -50,6 +50,7 @@ import io.gatehill.imposter.lifecycle.EngineLifecycleHooks
 import io.gatehill.imposter.lifecycle.EngineLifecycleListener
 import io.gatehill.imposter.plugin.config.ContentTypedConfig
 import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.config.resource.AbstractResourceConfig
 import io.gatehill.imposter.plugin.config.resource.BasicResourceConfig
 import io.gatehill.imposter.plugin.config.resource.ResourceConfig
 import io.gatehill.imposter.script.ResponseBehaviour
@@ -227,6 +228,17 @@ class ResponseServiceImpl @Inject constructor(
         } else {
             origResponseData
         }
+        
+        // Process custom log message if present
+        if (resourceConfig is AbstractResourceConfig && resourceConfig.log != null) {
+            val logMessage = if (template) {
+                PlaceholderUtil.replace(resourceConfig.log!!, httpExchange, PlaceholderUtil.templateEvaluators)
+            } else {
+                resourceConfig.log!!
+            }
+            LOGGER.info("Resource log: {}", logMessage)
+        }
+        
         response.end(responseData)
     }
 
