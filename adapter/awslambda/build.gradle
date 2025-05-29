@@ -2,7 +2,7 @@ apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
 ext {
-    version_lambda_logger = '1.5.1'
+    version_lambda_logger = '1.6.0'
 }
 
 compileJava {
