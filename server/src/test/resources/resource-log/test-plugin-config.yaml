@@ -1,0 +1,27 @@
+plugin: "io.gatehill.imposter.plugin.test.TestPluginImpl"
+
+interceptors:
+- path: /interceptor-log
+  method: GET
+  log: "Interceptor log message"
+  continue: false
+  response:
+    statusCode: 401
+    content: "Unauthorized"
+
+resources:
+- path: /resource-log/{id}
+  method: GET
+  log: "Resource log message for ID: ${context.request.pathParams.id}"
+  response:
+    content: "resource_logged"
+
+- path: /simple
+  method: GET
+  response:
+    content: "simple"
+
+- path: /*
+  method: GET
+  response:
+    content: "default"
