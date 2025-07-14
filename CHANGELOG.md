@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.7.0] - 2025-07-14
+### Added
+- feat(openapi): support structured syntax suffixes in for JSON MIME types.
+- feat: support custom content types in OpenAPI
+
+### Changed
+- chore(deps): bump actions/setup-python from 5.5.0 to 5.6.0
+- chore(deps): bump com.amazonaws:aws-java-sdk-bom
+- chore(deps): bump io.rest-assured:rest-assured from 5.3.2 to 5.5.5
+- refactor: allow cumulative update of response behaviour between handlers.
+- refactor: allows handler type to be specified.
+- refactor: removes redundant config argument.
+- refactor: switches interceptor routing to be global to all routes.
+- test(openapi): improves coverage for response transmission service.
+- test(openapi): migrate spec loader test to JUnit 5.
+
 ## [4.6.8] - 2025-04-16
 ### Changed
 - build: adds JVM argument to open java.lang package for tests.
