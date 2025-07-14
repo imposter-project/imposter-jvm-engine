@@ -51,9 +51,8 @@ import io.gatehill.imposter.config.support.TestSupport.uploadFileToS3
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import io.vertx.core.AsyncResult
 import io.vertx.core.Vertx
-import org.junit.*
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
 import java.io.File
 import java.nio.file.Files
 
@@ -84,7 +83,7 @@ class S3FileDownloaderTest {
         uploadFileToS3(s3Mock!!, "/config", "unused-subdir/")
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
         try {
             s3Mock?.takeIf { it.isRunning }?.stop()
@@ -122,13 +121,13 @@ class S3FileDownloaderTest {
         private var vertx: Vertx? = null
 
         @JvmStatic
-        @BeforeClass
+        @BeforeAll
         fun beforeClass() {
             vertx = Vertx.vertx()
         }
 
         @JvmStatic
-        @AfterClass
+        @AfterAll
         @Throws(Exception::class)
         fun afterClass() {
             blockWait<AsyncResult<Void>?> { completionHandler -> vertx!!.close(completionHandler) }
