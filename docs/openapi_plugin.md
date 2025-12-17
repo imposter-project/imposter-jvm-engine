@@ -530,3 +530,34 @@ specFile: s3://example-bucket/sample_spec.yaml
 When using S3, set up your AWS profile/region/credentials as per standard AWS practice. For example, using an instance profile in EC2, environment variables or the various local environment configuration locations for providing AWS credentials. 
 
 > Note: Remote specification files can be cached locally by setting the environment variable `IMPOSTER_OPENAPI_REMOTE_FILE_CACHE=true`.
+
+### External Reference Support
+
+**Available in Imposter 5 and later**
+
+The OpenAPI plugin supports resolving external references in your OpenAPI specifications. You can configure a base URL for external references using the `externalBaseURL` configuration option.
+
+```yaml
+plugin: openapi
+specFile: path/to/your/openapi.yaml
+
+config:
+  externalBaseURL: "https://api.example.com/"
+
+resources:
+  - path: /users
+    method: GET
+    response:
+      statusCode: 200
+```
+
+When `externalBaseURL` is configured, the plugin will resolve external `$ref` references relative to this base URL. For example, if your OpenAPI specification contains:
+
+```yaml
+components:
+  schemas:
+    User:
+      $ref: 'schemas/user.json'
+```
+
+The plugin will resolve this reference to `https://api.example.com/schemas/user.json`.
