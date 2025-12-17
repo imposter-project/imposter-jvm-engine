@@ -1,2 +1,0 @@
-# required due to https://github.com/pypa/setuptools/issues/4519
-setuptools<72

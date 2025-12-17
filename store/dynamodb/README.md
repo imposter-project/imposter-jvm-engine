@@ -6,7 +6,7 @@ DynamoDB store implementation.
 
 ### Option 1: Using the CLI
 
-To use this plugin, install it with the [Imposter CLI](../../docs/run_imposter_cli.md):
+To use this plugin, install it with the [Imposter CLI](https://docs.imposter.sh/run_imposter_cli):
 
     imposter plugin install -d store-dynamodb
 

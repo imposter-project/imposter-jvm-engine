@@ -1870,8 +1870,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [1.21.1] - 2021-09-16
 ### Added
-- (core) Adds embedded JVM distribution. This allows use of Imposter in JUnit tests. See [JVM bindings](./docs/embed_jvm.md).
-- (docs) Adds links to [Imposter CLI](./docs/run_imposter_cli.md) and [JavaScript bindings](https://github.com/gatehill/imposter-js).
+- (core) Adds embedded JVM distribution. This allows use of Imposter in JUnit tests. See [JVM bindings](https://docs.imposter.sh/embed_jvm).
+- (docs) Adds links to [Imposter CLI](https://docs.imposter.sh/run_imposter_cli) and [JavaScript bindings](https://github.com/gatehill/imposter-js).
 
 ## [1.21.0] - 2021-09-13
 ### Added
@@ -1917,7 +1917,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [1.18.0] - 2021-08-19
 ### Added
-- (openapi, rest) Allows resource matching against request body using JsonPath. See [request matching](./docs/request_matching.md).
+- (openapi, rest) Allows resource matching against request body using JsonPath. See [request matching](https://docs.imposter.sh/request_matching).
 - (docs) Improves documentation for data capture, response templates and advanced request matching.
 
 ### Fixed

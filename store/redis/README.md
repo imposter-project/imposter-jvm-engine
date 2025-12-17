@@ -6,7 +6,7 @@ Redis store implementation.
 
 ### Option 1: Using the CLI
 
-To use this plugin, install it with the [Imposter CLI](../../docs/run_imposter_cli.md):
+To use this plugin, install it with the [Imposter CLI](https://docs.imposter.sh/run_imposter_cli):
 
     imposter plugin install -d store-redis
 
@@ -108,7 +108,7 @@ Test retrieving the value:
     $ curl http://localhost:8080/load
     bar
 
-Note, the `store` and `load` endpoints above are part of the configuration for this example. See the [Stores](../../docs/stores.md) documentation for full API details.
+Note, the `store` and `load` endpoints above are part of the configuration for this example. See the [Stores](https://docs.imposter.sh/stores) documentation for full API details.
 
 ## Expiration
 

@@ -49,12 +49,12 @@ The quickest way to get up and running is to use the free cloud-hosted service a
 
 Imposter provides specialised mocks for the following scenarios:
 
-- **[OpenAPI](docs/openapi_plugin.md)** - Support for OpenAPI (and Swagger) API specifications.
-- **[REST](docs/rest_plugin.md)** - Mocks RESTful or plain HTTP APIs.
-- **[SOAP](docs/soap_plugin.md)** - Support for SOAP web services (and WSDL files).
-- **[HBase](docs/hbase_plugin.md)** - Basic HBase mock implementation.
-- **[SFDC (Salesforce)](docs/sfdc_plugin.md)** - Basic Salesforce mock implementation.
-- **[WireMock](docs/wiremock_plugin.md)** - Support for WireMock mappings files.
+- **[OpenAPI](https://docs.imposter.sh/openapi_plugin)** - Support for OpenAPI (and Swagger) API specifications.
+- **[REST](https://docs.imposter.sh/rest_plugin)** - Mocks RESTful or plain HTTP APIs.
+- **[SOAP](https://docs.imposter.sh/soap_plugin)** - Support for SOAP web services (and WSDL files).
+- **[HBase](https://docs.imposter.sh/hbase_plugin)** - Basic HBase mock implementation.
+- **[SFDC (Salesforce)](https://docs.imposter.sh/sfdc_plugin)** - Basic Salesforce mock implementation.
+- **[WireMock](https://docs.imposter.sh/wiremock_plugin)** - Support for WireMock mappings files.
 
 These use a plugin system, so you can also create your own plugins, using any JVM language.
 
@@ -88,25 +88,25 @@ There are many ways to run Imposter.
 
 ### Standalone mock server
 
-- Using the command line client - see [Imposter CLI](./docs/run_imposter_cli.md)
-- As a Docker container - see [Imposter Docker container](./docs/run_imposter_docker.md)
-- As a Lambda function in AWS - see [Imposter AWS Lambda](./docs/run_imposter_aws_lambda.md)
-- As a JAR file on the JVM - see [Imposter JAR file](./docs/run_imposter_jar.md)
+- Using the command line client - see [Imposter CLI](https://docs.imposter.sh/run_imposter_cli)
+- As a Docker container - see [Imposter Docker container](https://docs.imposter.sh/run_imposter_docker)
+- As a Lambda function in AWS - see [Imposter AWS Lambda](https://docs.imposter.sh/run_imposter_aws_lambda)
+- As a JAR file on the JVM - see [Imposter JAR file](https://docs.imposter.sh/run_imposter_jar)
 
 ### Embedded in tests
 
-- Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](./docs/embed_jvm.md)
+- Embedded within your **Java/Kotlin/Scala/JVM** unit tests - see [JVM bindings](https://docs.imposter.sh/embed_jvm)
 - Embedded within your **JavaScript/Node.js** unit tests - see [JavaScript bindings](https://github.com/imposter-project/imposter-js)
 
 ### Within your CI/CD pipeline
 
-- Use the [Imposter GitHub Actions](./docs/github_actions.md) to start and stop Imposter during your CI/CD pipeline.
+- Use the [Imposter GitHub Actions](https://docs.imposter.sh/github_actions) to start and stop Imposter during your CI/CD pipeline.
 
 ---
 
 ## Recent changes and Roadmap
   
-For recent changes see the [Changelog](CHANGELOG.md), or view the [Roadmap](docs/roadmap.md).
+For recent changes see the [Changelog](CHANGELOG.md), or view the [Roadmap](https://github.com/imposter-project/imposter/blob/main/docs/roadmap.md).
 
 ## Contributing
 
