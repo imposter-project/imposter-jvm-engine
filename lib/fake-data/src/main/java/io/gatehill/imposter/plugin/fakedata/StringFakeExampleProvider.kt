@@ -43,13 +43,13 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.plugin.openapi.service.valueprovider.StringExampleProvider
+import io.gatehill.imposter.plugin.openapi.service.valueprovider.StringExampleProvider as BaseStringExampleProvider
 import io.swagger.v3.oas.models.media.Schema
 
 /**
  * Provides fake example values for strings.
  */
-class FakeExampleProvider : StringExampleProvider() {
+class StringFakeExampleProvider : BaseStringExampleProvider() {
     override fun provide(schema: Schema<*>, propNameHint: String?): String {
         return schema.extensions?.get(EXTENSION_PROPERTY_NAME)?.let { if (it is String) FakeGenerator.expression(it) else null }
             ?: propNameHint?.let { FakeGenerator.fake(propNameHint) }

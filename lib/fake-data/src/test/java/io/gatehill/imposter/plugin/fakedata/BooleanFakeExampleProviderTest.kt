@@ -56,7 +56,7 @@ class BooleanFakeExampleProviderTest {
     fun `fake boolean using openapi extension`() {
         val example = BooleanFakeExampleProvider().provide(
             schema = BooleanSchema().apply {
-                addExtension(FakeExampleProvider.EXTENSION_PROPERTY_NAME, "Bool.bool")
+                addExtension(StringFakeExampleProvider.EXTENSION_PROPERTY_NAME, "Bool.bool")
             },
             propNameHint = null
         )
