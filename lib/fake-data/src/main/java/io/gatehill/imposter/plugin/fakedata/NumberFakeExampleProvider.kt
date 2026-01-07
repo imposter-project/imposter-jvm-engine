@@ -43,31 +43,32 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.plugin.PluginInfo
-import io.gatehill.imposter.plugin.config.PluginConfig
+import io.gatehill.imposter.plugin.fakedata.FakeExampleProvider.Companion.EXTENSION_PROPERTY_NAME
 import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
-import io.gatehill.imposter.util.PlaceholderUtil
+import io.swagger.v3.oas.models.media.Schema
 import org.apache.logging.log4j.LogManager
 
 /**
- * Synthetic data plugin.
+ * Provides fake example values for numbers.
  */
-@PluginInfo("fake-data")
-class FakeDataPlugin : Plugin, EngineLifecycleListener {
-    override fun afterRoutesConfigured(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>,
-        router: HttpRouter,
-    ) {
-        LogManager.getLogger(FakeExampleProvider::class.java).info("Registering fake data providers")
-        ExampleProvider.register("string", FakeExampleProvider())
-        ExampleProvider.register("integer", IntegerFakeExampleProvider())
-        ExampleProvider.register("number", NumberFakeExampleProvider())
-        ExampleProvider.register("boolean", BooleanFakeExampleProvider())
-        PlaceholderUtil.register(FakeEvaluator())
+class NumberFakeExampleProvider : ExampleProvider<Double> {
+    override fun provide(schema: Schema<*>, propNameHint: String?): Double {
+        val stringValue = schema.extensions?.get(EXTENSION_PROPERTY_NAME)?.let {
+            if (it is String) FakeGenerator.expression(it) else null
+        } ?: propNameHint?.let { FakeGenerator.fake(propNameHint) }
+
+        return stringValue?.let {
+            try {
+                it.toDoubleOrNull() ?: DEFAULT_VALUE
+            } catch (e: Exception) {
+                LOGGER.warn("Failed to convert fake data value '$it' to number, using default", e)
+                DEFAULT_VALUE
+            }
+        } ?: DEFAULT_VALUE
+    }
+
+    companion object {
+        private val LOGGER = LogManager.getLogger(NumberFakeExampleProvider::class.java)
+        private const val DEFAULT_VALUE = 42.42
     }
 }

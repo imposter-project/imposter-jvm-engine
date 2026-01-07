@@ -43,31 +43,34 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.plugin.PluginInfo
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
-import io.gatehill.imposter.util.PlaceholderUtil
-import org.apache.logging.log4j.LogManager
+import io.swagger.v3.oas.models.media.IntegerSchema
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.greaterThanOrEqualTo
+import org.hamcrest.Matchers.lessThanOrEqualTo
+import org.junit.jupiter.api.Test
 
 /**
- * Synthetic data plugin.
+ * Tests for [IntegerFakeExampleProvider].
  */
-@PluginInfo("fake-data")
-class FakeDataPlugin : Plugin, EngineLifecycleListener {
-    override fun afterRoutesConfigured(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>,
-        router: HttpRouter,
-    ) {
-        LogManager.getLogger(FakeExampleProvider::class.java).info("Registering fake data providers")
-        ExampleProvider.register("string", FakeExampleProvider())
-        ExampleProvider.register("integer", IntegerFakeExampleProvider())
-        ExampleProvider.register("number", NumberFakeExampleProvider())
-        ExampleProvider.register("boolean", BooleanFakeExampleProvider())
-        PlaceholderUtil.register(FakeEvaluator())
+class IntegerFakeExampleProviderTest {
+    @Test
+    fun `fake integer using openapi extension`() {
+        val example = IntegerFakeExampleProvider().provide(
+            schema = IntegerSchema().apply {
+                addExtension(FakeExampleProvider.EXTENSION_PROPERTY_NAME, "Number.numberBetween '0','255'")
+            },
+            propNameHint = null
+        )
+        assertThat(example, greaterThanOrEqualTo(0))
+        assertThat(example, lessThanOrEqualTo(255))
+    }
+
+    @Test
+    fun `fake integer with default when extension not present`() {
+        val example = IntegerFakeExampleProvider().provide(
+            schema = IntegerSchema(),
+            propNameHint = null
+        )
+        assertThat(example, greaterThanOrEqualTo(0))
     }
 }
