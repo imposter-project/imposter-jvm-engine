@@ -63,8 +63,8 @@ class FakeDataPlugin : Plugin, EngineLifecycleListener {
         allPluginConfigs: List<PluginConfig>,
         router: HttpRouter,
     ) {
-        LogManager.getLogger(FakeExampleProvider::class.java).info("Registering fake data providers")
-        ExampleProvider.register("string", FakeExampleProvider())
+        LogManager.getLogger(StringFakeExampleProvider::class.java).info("Registering fake data providers")
+        ExampleProvider.register("string", StringFakeExampleProvider())
         ExampleProvider.register("integer", IntegerFakeExampleProvider())
         ExampleProvider.register("number", NumberFakeExampleProvider())
         ExampleProvider.register("boolean", BooleanFakeExampleProvider())

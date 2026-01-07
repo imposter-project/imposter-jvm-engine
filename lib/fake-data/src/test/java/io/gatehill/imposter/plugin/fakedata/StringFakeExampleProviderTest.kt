@@ -50,14 +50,14 @@ import org.hamcrest.Matchers.notNullValue
 import org.junit.jupiter.api.Test
 
 /**
- * Tests for [FakeExampleProvider].
+ * Tests for [StringFakeExampleProvider].
  */
-class FakeExampleProviderTest {
+class StringFakeExampleProviderTest {
     @Test
     fun `fake using openapi extension`() {
-        val example = FakeExampleProvider().provide(
+        val example = StringFakeExampleProvider().provide(
             schema = StringSchema().apply {
-                addExtension(FakeExampleProvider.EXTENSION_PROPERTY_NAME, "Color.name")
+                addExtension(StringFakeExampleProvider.EXTENSION_PROPERTY_NAME, "Color.name")
             },
             propNameHint = null
         )
@@ -66,7 +66,7 @@ class FakeExampleProviderTest {
 
     @Test
     fun `fake using property name hint`() {
-        val example = FakeExampleProvider().provide(
+        val example = StringFakeExampleProvider().provide(
             schema = StringSchema(),
             propNameHint = "email"
         )

@@ -43,7 +43,7 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.plugin.fakedata.FakeExampleProvider.Companion.EXTENSION_PROPERTY_NAME
+import io.gatehill.imposter.plugin.fakedata.StringFakeExampleProvider.Companion.EXTENSION_PROPERTY_NAME
 import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
 import io.swagger.v3.oas.models.media.Schema
 import org.apache.logging.log4j.LogManager
