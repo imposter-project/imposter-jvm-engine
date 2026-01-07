@@ -43,31 +43,32 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.plugin.PluginInfo
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
-import io.gatehill.imposter.util.PlaceholderUtil
-import org.apache.logging.log4j.LogManager
+import io.swagger.v3.oas.models.media.BooleanSchema
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.notNullValue
+import org.junit.jupiter.api.Test
 
 /**
- * Synthetic data plugin.
+ * Tests for [BooleanFakeExampleProvider].
  */
-@PluginInfo("fake-data")
-class FakeDataPlugin : Plugin, EngineLifecycleListener {
-    override fun afterRoutesConfigured(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>,
-        router: HttpRouter,
-    ) {
-        LogManager.getLogger(FakeExampleProvider::class.java).info("Registering fake data providers")
-        ExampleProvider.register("string", FakeExampleProvider())
-        ExampleProvider.register("integer", IntegerFakeExampleProvider())
-        ExampleProvider.register("number", NumberFakeExampleProvider())
-        ExampleProvider.register("boolean", BooleanFakeExampleProvider())
-        PlaceholderUtil.register(FakeEvaluator())
+class BooleanFakeExampleProviderTest {
+    @Test
+    fun `fake boolean using openapi extension`() {
+        val example = BooleanFakeExampleProvider().provide(
+            schema = BooleanSchema().apply {
+                addExtension(FakeExampleProvider.EXTENSION_PROPERTY_NAME, "Bool.bool")
+            },
+            propNameHint = null
+        )
+        assertThat(example, notNullValue())
+    }
+
+    @Test
+    fun `fake boolean with default when extension not present`() {
+        val example = BooleanFakeExampleProvider().provide(
+            schema = BooleanSchema(),
+            propNameHint = null
+        )
+        assertThat(example, notNullValue())
     }
 }
