@@ -43,33 +43,26 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.swagger.v3.oas.models.media.StringSchema
-import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.containsString
-import org.hamcrest.Matchers.notNullValue
-import org.junit.jupiter.api.Test
+import io.swagger.v3.oas.models.media.Schema
+import org.apache.logging.log4j.LogManager
 
 /**
- * Tests for [FakeExampleProvider].
+ * Provides fake example values for numbers.
  */
-class FakeExampleProviderTest {
-    @Test
-    fun `fake using openapi extension`() {
-        val example = FakeExampleProvider().provide(
-            schema = StringSchema().apply {
-                addExtension(FakeExampleProvider.EXTENSION_PROPERTY_NAME, "Color.name")
-            },
-            propNameHint = null
-        )
-        assertThat(example, notNullValue())
+class NumberFakeExampleProvider : AbstractFakeExampleProvider<Double>() {
+    override fun convertToType(fakeDataString: String?, schema: Schema<*>, propNameHint: String?): Double {
+        return fakeDataString?.let {
+            try {
+                it.toDoubleOrNull() ?: DEFAULT_VALUE
+            } catch (e: Exception) {
+                LOGGER.warn("Failed to convert fake data value '$it' to number, using default", e)
+                DEFAULT_VALUE
+            }
+        } ?: DEFAULT_VALUE
     }
 
-    @Test
-    fun `fake using property name hint`() {
-        val example = FakeExampleProvider().provide(
-            schema = StringSchema(),
-            propNameHint = "email"
-        )
-        assertThat(example, containsString("@"))
+    companion object {
+        private val LOGGER = LogManager.getLogger(NumberFakeExampleProvider::class.java)
+        private const val DEFAULT_VALUE = 42.42
     }
 }

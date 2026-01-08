@@ -43,20 +43,32 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.plugin.openapi.service.valueprovider.StringExampleProvider
-import io.swagger.v3.oas.models.media.Schema
+import io.swagger.v3.oas.models.media.BooleanSchema
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.notNullValue
+import org.junit.jupiter.api.Test
 
 /**
- * Provides fake example values for strings.
+ * Tests for [BooleanFakeExampleProvider].
  */
-class FakeExampleProvider : StringExampleProvider() {
-    override fun provide(schema: Schema<*>, propNameHint: String?): String {
-        return schema.extensions?.get(EXTENSION_PROPERTY_NAME)?.let { if (it is String) FakeGenerator.expression(it) else null }
-            ?: propNameHint?.let { FakeGenerator.fake(propNameHint) }
-            ?: super.provide(schema, null)
+class BooleanFakeExampleProviderTest {
+    @Test
+    fun `fake boolean using openapi extension`() {
+        val example = BooleanFakeExampleProvider().provide(
+            schema = BooleanSchema().apply {
+                addExtension(AbstractFakeExampleProvider.EXTENSION_PROPERTY_NAME, "Bool.bool")
+            },
+            propNameHint = null
+        )
+        assertThat(example, notNullValue())
     }
 
-    companion object {
-        const val EXTENSION_PROPERTY_NAME = "x-fake-data"
+    @Test
+    fun `fake boolean with default when extension not present`() {
+        val example = BooleanFakeExampleProvider().provide(
+            schema = BooleanSchema(),
+            propNameHint = null
+        )
+        assertThat(example, notNullValue())
     }
 }

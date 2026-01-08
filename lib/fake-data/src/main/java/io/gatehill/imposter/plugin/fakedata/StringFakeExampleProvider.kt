@@ -43,31 +43,16 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.plugin.PluginInfo
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
-import io.gatehill.imposter.util.PlaceholderUtil
-import org.apache.logging.log4j.LogManager
+import io.gatehill.imposter.plugin.openapi.service.valueprovider.StringExampleProvider as BaseStringExampleProvider
+import io.swagger.v3.oas.models.media.Schema
 
 /**
- * Synthetic data plugin.
+ * Provides fake example values for strings.
  */
-@PluginInfo("fake-data")
-class FakeDataPlugin : Plugin, EngineLifecycleListener {
-    override fun afterRoutesConfigured(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>,
-        router: HttpRouter,
-    ) {
-        LogManager.getLogger(StringFakeExampleProvider::class.java).info("Registering fake data providers")
-        ExampleProvider.register("string", StringFakeExampleProvider())
-        ExampleProvider.register("integer", IntegerFakeExampleProvider())
-        ExampleProvider.register("number", NumberFakeExampleProvider())
-        ExampleProvider.register("boolean", BooleanFakeExampleProvider())
-        PlaceholderUtil.register(FakeEvaluator())
+class StringFakeExampleProvider : AbstractFakeExampleProvider<String>() {
+    private val baseProvider = BaseStringExampleProvider()
+
+    override fun convertToType(fakeDataString: String?, schema: Schema<*>, propNameHint: String?): String {
+        return fakeDataString ?: baseProvider.provide(schema, null)
     }
 }

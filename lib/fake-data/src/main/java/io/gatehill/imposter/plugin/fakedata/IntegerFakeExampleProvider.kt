@@ -43,31 +43,26 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.plugin.PluginInfo
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
-import io.gatehill.imposter.util.PlaceholderUtil
+import io.swagger.v3.oas.models.media.Schema
 import org.apache.logging.log4j.LogManager
 
 /**
- * Synthetic data plugin.
+ * Provides fake example values for integers.
  */
-@PluginInfo("fake-data")
-class FakeDataPlugin : Plugin, EngineLifecycleListener {
-    override fun afterRoutesConfigured(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>,
-        router: HttpRouter,
-    ) {
-        LogManager.getLogger(StringFakeExampleProvider::class.java).info("Registering fake data providers")
-        ExampleProvider.register("string", StringFakeExampleProvider())
-        ExampleProvider.register("integer", IntegerFakeExampleProvider())
-        ExampleProvider.register("number", NumberFakeExampleProvider())
-        ExampleProvider.register("boolean", BooleanFakeExampleProvider())
-        PlaceholderUtil.register(FakeEvaluator())
+class IntegerFakeExampleProvider : AbstractFakeExampleProvider<Int>() {
+    override fun convertToType(fakeDataString: String?, schema: Schema<*>, propNameHint: String?): Int {
+        return fakeDataString?.let {
+            try {
+                it.toIntOrNull() ?: it.toDoubleOrNull()?.toInt() ?: DEFAULT_VALUE
+            } catch (e: Exception) {
+                LOGGER.warn("Failed to convert fake data value '$it' to integer, using default", e)
+                DEFAULT_VALUE
+            }
+        } ?: DEFAULT_VALUE
+    }
+
+    companion object {
+        private val LOGGER = LogManager.getLogger(IntegerFakeExampleProvider::class.java)
+        private const val DEFAULT_VALUE = 42
     }
 }

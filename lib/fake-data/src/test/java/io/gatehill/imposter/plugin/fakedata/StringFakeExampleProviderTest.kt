@@ -43,31 +43,33 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.plugin.PluginInfo
-import io.gatehill.imposter.plugin.config.PluginConfig
-import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
-import io.gatehill.imposter.util.PlaceholderUtil
-import org.apache.logging.log4j.LogManager
+import io.swagger.v3.oas.models.media.StringSchema
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.notNullValue
+import org.junit.jupiter.api.Test
 
 /**
- * Synthetic data plugin.
+ * Tests for [StringFakeExampleProvider].
  */
-@PluginInfo("fake-data")
-class FakeDataPlugin : Plugin, EngineLifecycleListener {
-    override fun afterRoutesConfigured(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>,
-        router: HttpRouter,
-    ) {
-        LogManager.getLogger(StringFakeExampleProvider::class.java).info("Registering fake data providers")
-        ExampleProvider.register("string", StringFakeExampleProvider())
-        ExampleProvider.register("integer", IntegerFakeExampleProvider())
-        ExampleProvider.register("number", NumberFakeExampleProvider())
-        ExampleProvider.register("boolean", BooleanFakeExampleProvider())
-        PlaceholderUtil.register(FakeEvaluator())
+class StringFakeExampleProviderTest {
+    @Test
+    fun `fake using openapi extension`() {
+        val example = StringFakeExampleProvider().provide(
+            schema = StringSchema().apply {
+                addExtension(AbstractFakeExampleProvider.EXTENSION_PROPERTY_NAME, "Color.name")
+            },
+            propNameHint = null
+        )
+        assertThat(example, notNullValue())
+    }
+
+    @Test
+    fun `fake using property name hint`() {
+        val example = StringFakeExampleProvider().provide(
+            schema = StringSchema(),
+            propNameHint = "email"
+        )
+        assertThat(example, containsString("@"))
     }
 }

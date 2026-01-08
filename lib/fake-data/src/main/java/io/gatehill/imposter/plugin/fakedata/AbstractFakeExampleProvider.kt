@@ -43,31 +43,35 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.ImposterConfig
-import io.gatehill.imposter.http.HttpRouter
-import io.gatehill.imposter.lifecycle.EngineLifecycleListener
-import io.gatehill.imposter.plugin.Plugin
-import io.gatehill.imposter.plugin.PluginInfo
-import io.gatehill.imposter.plugin.config.PluginConfig
 import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
-import io.gatehill.imposter.util.PlaceholderUtil
-import org.apache.logging.log4j.LogManager
+import io.swagger.v3.oas.models.media.Schema
 
 /**
- * Synthetic data plugin.
+ * Base class for fake data example providers.
+ * Handles common logic for retrieving fake data from extensions and property hints.
  */
-@PluginInfo("fake-data")
-class FakeDataPlugin : Plugin, EngineLifecycleListener {
-    override fun afterRoutesConfigured(
-        imposterConfig: ImposterConfig,
-        allPluginConfigs: List<PluginConfig>,
-        router: HttpRouter,
-    ) {
-        LogManager.getLogger(StringFakeExampleProvider::class.java).info("Registering fake data providers")
-        ExampleProvider.register("string", StringFakeExampleProvider())
-        ExampleProvider.register("integer", IntegerFakeExampleProvider())
-        ExampleProvider.register("number", NumberFakeExampleProvider())
-        ExampleProvider.register("boolean", BooleanFakeExampleProvider())
-        PlaceholderUtil.register(FakeEvaluator())
+abstract class AbstractFakeExampleProvider<T> : ExampleProvider<T> {
+    override fun provide(schema: Schema<*>, propNameHint: String?): T {
+        val fakeDataString = getFakeDataString(schema, propNameHint)
+        return convertToType(fakeDataString, schema, propNameHint)
+    }
+
+    /**
+     * Gets the fake data string from the schema extension or property name hint.
+     */
+    protected fun getFakeDataString(schema: Schema<*>, propNameHint: String?): String? {
+        return schema.extensions?.get(EXTENSION_PROPERTY_NAME)?.let {
+            if (it is String) FakeGenerator.expression(it) else null
+        } ?: propNameHint?.let { FakeGenerator.fake(propNameHint) }
+    }
+
+    /**
+     * Converts the fake data string to the target type.
+     * If fakeDataString is null, should return a sensible default.
+     */
+    protected abstract fun convertToType(fakeDataString: String?, schema: Schema<*>, propNameHint: String?): T
+
+    companion object {
+        const val EXTENSION_PROPERTY_NAME = "x-fake-data"
     }
 }
