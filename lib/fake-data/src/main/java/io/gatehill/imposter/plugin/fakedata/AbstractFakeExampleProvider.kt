@@ -43,32 +43,35 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.swagger.v3.oas.models.media.BooleanSchema
-import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.notNullValue
-import org.junit.jupiter.api.Test
+import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
+import io.swagger.v3.oas.models.media.Schema
 
 /**
- * Tests for [BooleanFakeExampleProvider].
+ * Base class for fake data example providers.
+ * Handles common logic for retrieving fake data from extensions and property hints.
  */
-class BooleanFakeExampleProviderTest {
-    @Test
-    fun `fake boolean using openapi extension`() {
-        val example = BooleanFakeExampleProvider().provide(
-            schema = BooleanSchema().apply {
-                addExtension(AbstractFakeExampleProvider.EXTENSION_PROPERTY_NAME, "Bool.bool")
-            },
-            propNameHint = null
-        )
-        assertThat(example, notNullValue())
+abstract class AbstractFakeExampleProvider<T> : ExampleProvider<T> {
+    override fun provide(schema: Schema<*>, propNameHint: String?): T {
+        val fakeDataString = getFakeDataString(schema, propNameHint)
+        return convertToType(fakeDataString, schema, propNameHint)
     }
 
-    @Test
-    fun `fake boolean with default when extension not present`() {
-        val example = BooleanFakeExampleProvider().provide(
-            schema = BooleanSchema(),
-            propNameHint = null
-        )
-        assertThat(example, notNullValue())
+    /**
+     * Gets the fake data string from the schema extension or property name hint.
+     */
+    protected fun getFakeDataString(schema: Schema<*>, propNameHint: String?): String? {
+        return schema.extensions?.get(EXTENSION_PROPERTY_NAME)?.let {
+            if (it is String) FakeGenerator.expression(it) else null
+        } ?: propNameHint?.let { FakeGenerator.fake(propNameHint) }
+    }
+
+    /**
+     * Converts the fake data string to the target type.
+     * If fakeDataString is null, should return a sensible default.
+     */
+    protected abstract fun convertToType(fakeDataString: String?, schema: Schema<*>, propNameHint: String?): T
+
+    companion object {
+        const val EXTENSION_PROPERTY_NAME = "x-fake-data"
     }
 }

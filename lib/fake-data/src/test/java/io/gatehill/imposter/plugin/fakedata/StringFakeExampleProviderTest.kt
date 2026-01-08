@@ -57,7 +57,7 @@ class StringFakeExampleProviderTest {
     fun `fake using openapi extension`() {
         val example = StringFakeExampleProvider().provide(
             schema = StringSchema().apply {
-                addExtension(StringFakeExampleProvider.EXTENSION_PROPERTY_NAME, "Color.name")
+                addExtension(AbstractFakeExampleProvider.EXTENSION_PROPERTY_NAME, "Color.name")
             },
             propNameHint = null
         )

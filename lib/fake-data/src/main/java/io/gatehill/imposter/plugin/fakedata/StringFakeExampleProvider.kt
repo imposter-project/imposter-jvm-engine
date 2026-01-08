@@ -49,14 +49,10 @@ import io.swagger.v3.oas.models.media.Schema
 /**
  * Provides fake example values for strings.
  */
-class StringFakeExampleProvider : BaseStringExampleProvider() {
-    override fun provide(schema: Schema<*>, propNameHint: String?): String {
-        return schema.extensions?.get(EXTENSION_PROPERTY_NAME)?.let { if (it is String) FakeGenerator.expression(it) else null }
-            ?: propNameHint?.let { FakeGenerator.fake(propNameHint) }
-            ?: super.provide(schema, null)
-    }
+class StringFakeExampleProvider : AbstractFakeExampleProvider<String>() {
+    private val baseProvider = BaseStringExampleProvider()
 
-    companion object {
-        const val EXTENSION_PROPERTY_NAME = "x-fake-data"
+    override fun convertToType(fakeDataString: String?, schema: Schema<*>, propNameHint: String?): String {
+        return fakeDataString ?: baseProvider.provide(schema, null)
     }
 }

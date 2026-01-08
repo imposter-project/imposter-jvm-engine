@@ -57,7 +57,7 @@ class NumberFakeExampleProviderTest {
     fun `fake number using openapi extension`() {
         val example = NumberFakeExampleProvider().provide(
             schema = NumberSchema().apply {
-                addExtension(StringFakeExampleProvider.EXTENSION_PROPERTY_NAME, "Number.randomDouble '2','0','100'")
+                addExtension(AbstractFakeExampleProvider.EXTENSION_PROPERTY_NAME, "Number.randomDouble '2','0','100'")
             },
             propNameHint = null
         )
