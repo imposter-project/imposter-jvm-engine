@@ -43,21 +43,15 @@
 
 package io.gatehill.imposter.plugin.fakedata
 
-import io.gatehill.imposter.plugin.fakedata.StringFakeExampleProvider.Companion.EXTENSION_PROPERTY_NAME
-import io.gatehill.imposter.plugin.openapi.service.valueprovider.ExampleProvider
 import io.swagger.v3.oas.models.media.Schema
 import org.apache.logging.log4j.LogManager
 
 /**
  * Provides fake example values for booleans.
  */
-class BooleanFakeExampleProvider : ExampleProvider<Boolean> {
-    override fun provide(schema: Schema<*>, propNameHint: String?): Boolean {
-        val stringValue = schema.extensions?.get(EXTENSION_PROPERTY_NAME)?.let {
-            if (it is String) FakeGenerator.expression(it) else null
-        } ?: propNameHint?.let { FakeGenerator.fake(propNameHint) }
-
-        return stringValue?.let {
+class BooleanFakeExampleProvider : AbstractFakeExampleProvider<Boolean>() {
+    override fun convertToType(fakeDataString: String?, schema: Schema<*>, propNameHint: String?): Boolean {
+        return fakeDataString?.let {
             try {
                 it.toBooleanStrictOrNull() ?: DEFAULT_VALUE
             } catch (e: Exception) {

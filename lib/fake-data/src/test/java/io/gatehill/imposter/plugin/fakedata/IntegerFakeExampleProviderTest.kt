@@ -57,7 +57,7 @@ class IntegerFakeExampleProviderTest {
     fun `fake integer using openapi extension`() {
         val example = IntegerFakeExampleProvider().provide(
             schema = IntegerSchema().apply {
-                addExtension(StringFakeExampleProvider.EXTENSION_PROPERTY_NAME, "Number.numberBetween '0','255'")
+                addExtension(AbstractFakeExampleProvider.EXTENSION_PROPERTY_NAME, "Number.numberBetween '0','255'")
             },
             propNameHint = null
         )
