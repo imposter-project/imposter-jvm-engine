@@ -12,5 +12,5 @@ node_modules/
 .imposter
 bin/
 /.vscode/
-.claude
+.claude/*.local.*
 CLAUDE.md
