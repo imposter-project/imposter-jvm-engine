@@ -148,7 +148,7 @@ class ResponseServiceImpl @Inject constructor(
             try {
                 val response = httpExchange.response
                 response.setStatusCode(responseBehaviour.statusCode)
-                responseBehaviour.responseHeaders.forEach { (name: String?, value: String?) ->
+                responseBehaviour.responseHeaders.forEach { (name, value) ->
                     val finalValue = if (responseBehaviour.isTemplate) {
                         PlaceholderUtil.replace(value, httpExchange, PlaceholderUtil.templateEvaluators)
                     } else {
