@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.8.0] - 2026-02-15
+### Added
+- feat: extend x-fake-data support to integer, number, and boolean types
+
+### Changed
+- build: add sandbox setup script and hook session start.
+- build: bump testcontainers to 2.0.3.
+- build: ignore agent config.
+- build: upgrade Kotlin from 1.9.20 to 2.3.10 with compatible dependencies
+- chore(deps): bump actions/checkout from 4 to 6
+- chore(deps): bump actions/github-script from 7 to 8
+- chore(deps): bump actions/setup-java from 4 to 5
+- chore(deps): bump actions/upload-artifact from 4 to 6
+- chore(deps): bump com.amazonaws:aws-lambda-java-core from 1.2.3 to 1.4.0
+- docs: describe external URI support.
+- docs: link to main docs site.
+- refactor: extract AbstractFakeExampleProvider to eliminate DRY violations
+- refactor: rename FakeExampleProvider to StringFakeExampleProvider
+- test: migrate S3ConfigResolverTest from JUnit 4 to JUnit 5
+- test: migrate S3FileDownloaderTest from JUnit 4 to JUnit 5
+- test: replace s3mock-testcontainers with localstack for S3 tests
+
 ## [4.7.0] - 2025-07-14
 ### Added
 - feat(openapi): support structured syntax suffixes in for JSON MIME types.
