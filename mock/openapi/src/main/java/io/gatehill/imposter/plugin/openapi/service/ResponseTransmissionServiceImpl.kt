@@ -42,6 +42,9 @@
  */
 package io.gatehill.imposter.plugin.openapi.service
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE
@@ -167,6 +170,7 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
             val exampleResponse: String = when {
                 mimeType.compatibleWith(JSON_CONTENT_TYPE) -> MapUtil.jsonify(example)
                 YAML_CONTENT_TYPES.any { mimeType.compatibleWith(it) } -> YAML_MAPPER.writeValueAsString(example)
+                XML_CONTENT_TYPES.any { mimeType.compatibleWith(it) } -> serialiseXml(example)
                 else -> {
                     LOGGER.warn("Unsupported response MIME type '{}' - returning example object as string", contentType)
                     example.toString()
@@ -176,6 +180,25 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
         } catch (e: Exception) {
             LOGGER.error("Error serialising response", e)
             example.toString()
+        }
+    }
+
+    /**
+     * Serialises the object as XML.
+     *
+     * @param example an object to be serialised as XML
+     * @return the XML serialisation
+     */
+    private fun serialiseXml(example: Any): String {
+        return when (example) {
+            is List<*> -> {
+                XML_MAPPER.writer().withRootName("items")
+                    .writeValueAsString(mapOf("item" to example))
+            }
+            else -> {
+                XML_MAPPER.writer().withRootName("root")
+                    .writeValueAsString(example)
+            }
         }
     }
 
@@ -194,5 +217,11 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
         private val JSON_CONTENT_TYPE = MimeType("application/json")
         private val YAML_CONTENT_TYPES = setOf("text/x-yaml", "application/yaml", "application/x-yaml")
             .map { MimeType(it) }
+        private val XML_CONTENT_TYPES = setOf("application/xml", "text/xml")
+            .map { MimeType(it) }
+        private val XML_MAPPER: XmlMapper = XmlMapper().apply {
+            enable(SerializationFeature.INDENT_OUTPUT)
+            setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        }
     }
 }
