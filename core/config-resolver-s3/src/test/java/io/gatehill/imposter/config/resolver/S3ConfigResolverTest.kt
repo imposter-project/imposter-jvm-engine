@@ -42,14 +42,14 @@
  */
 package io.gatehill.imposter.config.resolver
 
-import com.adobe.testing.s3mock.testcontainers.S3MockContainer
 import com.amazonaws.SDKGlobalConfiguration
 import com.amazonaws.regions.Regions
 import io.gatehill.imposter.config.S3FileDownloader
 import io.gatehill.imposter.config.support.TestSupport
 import io.gatehill.imposter.config.support.TestSupport.blockWait
-import io.gatehill.imposter.config.support.TestSupport.startS3Mock
+import io.gatehill.imposter.config.support.TestSupport.startLocalStack
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
+import org.testcontainers.localstack.LocalStackContainer
 import io.vertx.core.AsyncResult
 import io.vertx.core.Vertx
 import org.junit.jupiter.api.*
@@ -64,7 +64,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
  * @author Pete Cornish
  */
 class S3ConfigResolverTest {
-    private var s3Mock: S3MockContainer? = null
+    private var s3Mock: LocalStackContainer? = null
     private val s3ConfigResolver = S3ConfigResolver()
 
     @BeforeEach
@@ -72,11 +72,13 @@ class S3ConfigResolverTest {
         // These tests need Docker
         assumeDockerAccessible()
 
-        s3Mock = startS3Mock()
+        s3Mock = startLocalStack()
 
         S3FileDownloader.destroyInstance()
         System.setProperty(SDKGlobalConfiguration.AWS_REGION_SYSTEM_PROPERTY, Regions.US_EAST_1.name)
-        System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.httpEndpoint)
+        System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.endpoint.toString())
+        System.setProperty("aws.accessKeyId", "test")
+        System.setProperty("aws.secretKey", "test")
 
         TestSupport.uploadFileToS3(s3Mock!!, "/config", "imposter-config.yaml")
         TestSupport.uploadFileToS3(s3Mock!!, "/config", "pet-api.yaml")
@@ -90,6 +92,8 @@ class S3ConfigResolverTest {
         } catch (ignored: Exception) {
         }
         System.clearProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT)
+        System.clearProperty("aws.accessKeyId")
+        System.clearProperty("aws.secretKey")
         S3FileDownloader.destroyInstance()
     }
 

@@ -18,7 +18,7 @@ dependencies {
     testImplementation project(':test:test-utils')
     testImplementation project(':test:api-tests')
     testImplementation "org.testcontainers:testcontainers:$version_testcontainers"
-    testImplementation "com.adobe.testing:s3mock-testcontainers:$version_s3mock"
+    testImplementation "org.testcontainers:testcontainers-localstack:$version_testcontainers"
 
     // java 11 compatibility
     testImplementation ("javax.xml.bind:jaxb-api:$version_jaxb_api")

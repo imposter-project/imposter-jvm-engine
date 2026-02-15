@@ -42,12 +42,15 @@
  */
 package io.gatehill.imposter.plugin.openapi.service
 
-import com.adobe.testing.s3mock.testcontainers.S3MockContainer
 import com.amazonaws.SDKGlobalConfiguration
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.gatehill.imposter.config.S3FileDownloader
+import org.testcontainers.localstack.LocalStackContainer
+import org.testcontainers.utility.DockerImageName
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.service.FileCacheService
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
@@ -79,7 +82,7 @@ class SpecificationLoaderServiceTest {
         override fun writeToCache(cacheKey: String, content: String) {}
     }
     private val service = SpecificationLoaderService(noOpFileCacheService)
-    private var s3Mock: S3MockContainer? = null
+    private var s3Mock: LocalStackContainer? = null
 
     @AfterEach
     fun tearDown() {
@@ -88,6 +91,8 @@ class SpecificationLoaderServiceTest {
         } catch (ignored: Exception) {
         }
         System.clearProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT)
+        System.clearProperty("aws.accessKeyId")
+        System.clearProperty("aws.secretKey")
         S3FileDownloader.destroyInstance()
     }
 
@@ -145,14 +150,17 @@ class SpecificationLoaderServiceTest {
         // These tests need Docker
         assumeDockerAccessible()
 
-        s3Mock = S3MockContainer("2.4.10").apply {
-            withInitialBuckets("test")
-            start()
-        }
+        s3Mock = LocalStackContainer(DockerImageName.parse("localstack/localstack:3"))
+            .withServices("s3")
+            .apply { start() }
 
         S3FileDownloader.destroyInstance()
         System.setProperty(SDKGlobalConfiguration.AWS_REGION_SYSTEM_PROPERTY, Regions.US_EAST_1.name)
-        System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.httpEndpoint)
+        System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.endpoint.toString())
+        System.setProperty("aws.accessKeyId", "test")
+        System.setProperty("aws.secretKey", "test")
+
+        makeS3Client().createBucket("test")
 
         val specFilePath =
             Paths.get(
@@ -165,13 +173,16 @@ class SpecificationLoaderServiceTest {
         Assertions.assertEquals("Sample Petstore order service", spec.info.title, "title should match")
     }
 
-    private fun uploadFileToS3(specFilePath: Path): OpenApiPluginConfig {
-        val s3 = AmazonS3ClientBuilder.standard()
-            .enablePathStyleAccess()
-            .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(s3Mock!!.httpEndpoint, "us-east-1"))
-            .build()
+    private fun makeS3Client() = AmazonS3ClientBuilder.standard()
+        .enablePathStyleAccess()
+        .withEndpointConfiguration(
+            AwsClientBuilder.EndpointConfiguration(s3Mock!!.endpoint.toString(), "us-east-1")
+        )
+        .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials("test", "test")))
+        .build()
 
-        s3.putObject("test", "order_service.yaml", specFilePath.toFile())
+    private fun uploadFileToS3(specFilePath: Path): OpenApiPluginConfig {
+        makeS3Client().putObject("test", "order_service.yaml", specFilePath.toFile())
 
         val pluginConfig = OpenApiPluginConfig()
         pluginConfig.dir = specFilePath.parent.toFile()

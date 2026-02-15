@@ -26,7 +26,7 @@ dependencies {
     testImplementation project(':test:test-utils')
     testImplementation project(':test:api-tests')
     testImplementation "org.testcontainers:testcontainers:$version_testcontainers"
-    testImplementation "com.adobe.testing:s3mock-testcontainers:$version_s3mock"
+    testImplementation "org.testcontainers:testcontainers-localstack:$version_testcontainers"
     testImplementation "org.mockito:mockito-core:$version_mockito"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$version_mockito_kotlin"
 

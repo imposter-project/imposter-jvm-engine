@@ -43,8 +43,9 @@
 
 package io.gatehill.imposter.awslambda
 
-import com.adobe.testing.s3mock.testcontainers.S3MockContainer
 import com.amazonaws.SDKGlobalConfiguration
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.lambda.runtime.Context
@@ -52,6 +53,8 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.gatehill.imposter.config.S3FileDownloader
+import org.testcontainers.localstack.LocalStackContainer
+import org.testcontainers.utility.DockerImageName
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import org.junit.jupiter.api.AfterAll
@@ -88,7 +91,7 @@ class S3DownloadTest {
     }
 
     companion object {
-        private var s3Mock: S3MockContainer? = null
+        private var s3Mock: LocalStackContainer? = null
 
         val configFiles = arrayOf(
                 "imposter-config.yaml",
@@ -103,14 +106,17 @@ class S3DownloadTest {
             // These tests need Docker
             assumeDockerAccessible()
 
-            s3Mock = S3MockContainer("2.4.10").apply {
-                withInitialBuckets("test")
-                start()
-            }
+            s3Mock = LocalStackContainer(DockerImageName.parse("localstack/localstack:3"))
+                .withServices("s3")
+                .apply { start() }
 
             S3FileDownloader.destroyInstance()
             System.setProperty(SDKGlobalConfiguration.AWS_REGION_SYSTEM_PROPERTY, Regions.US_EAST_1.name)
-            System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.httpEndpoint)
+            System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.endpoint.toString())
+            System.setProperty("aws.accessKeyId", "test")
+            System.setProperty("aws.secretKey", "test")
+
+            makeS3Client().createBucket("test")
 
             for (configFile in configFiles) {
                 uploadFileToS3("/simple/config", configFile)
@@ -122,15 +128,17 @@ class S3DownloadTest {
             )
         }
 
+        private fun makeS3Client() = AmazonS3ClientBuilder.standard()
+            .enablePathStyleAccess()
+            .withEndpointConfiguration(
+                AwsClientBuilder.EndpointConfiguration(s3Mock!!.endpoint.toString(), "us-east-1")
+            )
+            .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials("test", "test")))
+            .build()
+
         private fun uploadFileToS3(baseDir: String, filePath: String) {
             val specFilePath = Paths.get(S3DownloadTest::class.java.getResource("$baseDir/$filePath")!!.toURI())
-
-            val s3 = AmazonS3ClientBuilder.standard()
-                .enablePathStyleAccess()
-                .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(s3Mock!!.httpEndpoint, "us-east-1"))
-                .build()
-
-            s3.putObject("test", filePath, specFilePath.toFile())
+            makeS3Client().putObject("test", filePath, specFilePath.toFile())
         }
 
         @AfterAll
@@ -141,6 +149,8 @@ class S3DownloadTest {
             } catch (ignored: Exception) {
             }
             System.clearProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT)
+            System.clearProperty("aws.accessKeyId")
+            System.clearProperty("aws.secretKey")
             S3FileDownloader.destroyInstance()
         }
     }

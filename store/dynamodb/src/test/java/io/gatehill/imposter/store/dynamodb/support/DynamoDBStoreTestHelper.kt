@@ -67,7 +67,7 @@ class DynamoDBStoreTestHelper {
     lateinit var ddb: AmazonDynamoDB
 
     fun startDynamoDb(additionalEnv: Map<String, String> = emptyMap()): LocalStackContainer {
-        val dynamo = LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.2"))
+        val dynamo = LocalStackContainer(DockerImageName.parse("localstack/localstack:3"))
             .withServices("dynamodb")
             .apply { start() }
 

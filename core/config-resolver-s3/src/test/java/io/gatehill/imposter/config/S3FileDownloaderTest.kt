@@ -42,13 +42,13 @@
  */
 package io.gatehill.imposter.config
 
-import com.adobe.testing.s3mock.testcontainers.S3MockContainer
 import com.amazonaws.SDKGlobalConfiguration
 import com.amazonaws.regions.Regions
 import io.gatehill.imposter.config.support.TestSupport
 import io.gatehill.imposter.config.support.TestSupport.blockWait
 import io.gatehill.imposter.config.support.TestSupport.uploadFileToS3
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
+import org.testcontainers.localstack.LocalStackContainer
 import io.vertx.core.AsyncResult
 import io.vertx.core.Vertx
 import org.junit.jupiter.api.*
@@ -62,18 +62,20 @@ import java.nio.file.Files
  * @author Pete Cornish
  */
 class S3FileDownloaderTest {
-    private var s3Mock: S3MockContainer? = null
+    private var s3Mock: LocalStackContainer? = null
 
     @BeforeEach
     fun setUp() {
         // These tests need Docker
         assumeDockerAccessible()
 
-        s3Mock = TestSupport.startS3Mock()
+        s3Mock = TestSupport.startLocalStack()
 
         S3FileDownloader.destroyInstance()
         System.setProperty(SDKGlobalConfiguration.AWS_REGION_SYSTEM_PROPERTY, Regions.US_EAST_1.name)
-        System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.httpEndpoint)
+        System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.endpoint.toString())
+        System.setProperty("aws.accessKeyId", "test")
+        System.setProperty("aws.secretKey", "test")
 
         uploadFileToS3(s3Mock!!, "/config", "imposter-config.yaml")
         uploadFileToS3(s3Mock!!, "/config", "pet-api.yaml")
@@ -90,6 +92,8 @@ class S3FileDownloaderTest {
         } catch (ignored: Exception) {
         }
         System.clearProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT)
+        System.clearProperty("aws.accessKeyId")
+        System.clearProperty("aws.secretKey")
         S3FileDownloader.destroyInstance()
     }
 
