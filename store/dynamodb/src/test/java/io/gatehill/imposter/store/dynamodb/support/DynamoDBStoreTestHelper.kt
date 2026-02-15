@@ -55,7 +55,7 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.store.dynamodb.config.Settings
-import org.testcontainers.containers.localstack.LocalStackContainer
+import org.testcontainers.localstack.LocalStackContainer
 import org.testcontainers.utility.DockerImageName
 
 /**
@@ -68,10 +68,10 @@ class DynamoDBStoreTestHelper {
 
     fun startDynamoDb(additionalEnv: Map<String, String> = emptyMap()): LocalStackContainer {
         val dynamo = LocalStackContainer(DockerImageName.parse("localstack/localstack:0.11.2"))
-            .withServices(LocalStackContainer.Service.DYNAMODB)
+            .withServices("dynamodb")
             .apply { start() }
 
-        val dynamoDbEndpoint = dynamo!!.getEndpointOverride(LocalStackContainer.Service.DYNAMODB).toString()
+        val dynamoDbEndpoint = dynamo.endpoint.toString()
         EnvVars.populate(
             mapOf(
                 "IMPOSTER_DYNAMODB_ENDPOINT" to dynamoDbEndpoint,
