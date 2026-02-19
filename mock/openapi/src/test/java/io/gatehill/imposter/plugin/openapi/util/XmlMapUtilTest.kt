@@ -161,4 +161,57 @@ class XmlMapUtilTest {
     fun `XML_MAPPER should be accessible`() {
         assertNotNull(XmlMapUtil.XML_MAPPER, "XML_MAPPER should be non-null")
     }
+
+    @Test
+    fun `xmlify should use custom root name for map`() {
+        val data = mapOf("name" to "Buddy", "id" to 1)
+        val xml = XmlMapUtil.xmlify(data, rootName = "Pet")
+
+        assertTrue(xml.contains("<Pet>"), "Should use custom root element name")
+        assertTrue(xml.contains("<name>Buddy</name>"), "Should contain name element")
+        assertTrue(xml.contains("</Pet>"), "Should contain closing custom root")
+        assertFalse(xml.contains("<root>"), "Should not contain default root")
+    }
+
+    @Test
+    fun `xmlify should use custom names for list`() {
+        val data = listOf(
+            mapOf("id" to 1, "name" to "Buddy"),
+            mapOf("id" to 2, "name" to "Max")
+        )
+        val xml = XmlMapUtil.xmlify(data, rootName = "Pets", itemName = "Pet")
+
+        assertTrue(xml.contains("<Pets>"), "Should use custom wrapper name")
+        assertTrue(xml.contains("<Pet>"), "Should use custom item name")
+        assertTrue(xml.contains("<name>Buddy</name>"), "Should contain first name")
+        assertTrue(xml.contains("<name>Max</name>"), "Should contain second name")
+        assertTrue(xml.contains("</Pets>"), "Should contain closing custom wrapper")
+        assertFalse(xml.contains("<items>"), "Should not contain default wrapper")
+        assertFalse(xml.contains("<item>"), "Should not contain default item name")
+    }
+
+    @Test
+    fun `xmlify should use custom root name only for list`() {
+        val data = listOf(mapOf("id" to 1))
+        val xml = XmlMapUtil.xmlify(data, rootName = "Users")
+
+        assertTrue(xml.contains("<Users>"), "Should use custom wrapper name")
+        assertTrue(xml.contains("<item>"), "Should use default item name when itemName not specified")
+        assertTrue(xml.contains("</Users>"), "Should contain closing custom wrapper")
+    }
+
+    @Test
+    fun `xmlify should use custom item name only for list`() {
+        val data = listOf(mapOf("id" to 1))
+        val xml = XmlMapUtil.xmlify(data, itemName = "User")
+
+        assertTrue(xml.contains("<items>"), "Should use default wrapper when rootName not specified")
+        assertTrue(xml.contains("<User>"), "Should use custom item name")
+        assertTrue(xml.contains("</items>"), "Should contain default closing wrapper")
+    }
+
+    @Test
+    fun `xmlify should ignore xml names for null input`() {
+        assertEquals("", XmlMapUtil.xmlify(null, rootName = "Pet", itemName = "Item"))
+    }
 }

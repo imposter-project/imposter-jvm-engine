@@ -67,7 +67,7 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
             httpExchange.response.end()
             return
         }
-        val exampleResponse = buildExampleResponse(example.contentType, example.value)
+        val exampleResponse = buildExampleResponse(example.contentType, example.value, example.xmlRootName, example.xmlItemName)
         if (LOGGER.isTraceEnabled) {
             LOGGER.trace(
                 "Serving mock example for {} with status code {}: {}",
@@ -92,15 +92,20 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
      * @param example     the example candidate - may be strongly typed [Example], map, list, or raw
      * @return the [String] representation of the example entry
      */
-    private fun buildExampleResponse(contentType: String, example: Any?): String? {
+    private fun buildExampleResponse(
+        contentType: String,
+        example: Any?,
+        xmlRootName: String? = null,
+        xmlItemName: String? = null
+    ): String? {
         return when (example) {
             is Example -> {
                 example.value?.toString()
             }
             is List<*> -> {
-                serialiseList(contentType, example)
+                serialiseList(contentType, example, xmlRootName, xmlItemName)
             }
-            else -> (example as? Map<*, *>)?.let { serialise(contentType, it) }
+            else -> (example as? Map<*, *>)?.let { serialise(contentType, it, xmlRootName, xmlItemName) }
                 ?: if (example is String) {
                     example
                 } else {
@@ -120,9 +125,14 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
      * @param example     a [List] to be serialised
      * @return the serialised list
      */
-    private fun serialiseList(contentType: String, example: List<*>): String {
+    private fun serialiseList(
+        contentType: String,
+        example: List<*>,
+        xmlRootName: String? = null,
+        xmlItemName: String? = null
+    ): String {
         val transformedList = transformListForSerialisation(example)
-        return serialise(contentType, transformedList)
+        return serialise(contentType, transformedList, xmlRootName, xmlItemName)
     }
 
     /**
@@ -162,13 +172,18 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
      * @param example     an object to be serialised
      * @return the serialisation
      */
-    private fun serialise(contentType: String, example: Any): String {
+    private fun serialise(
+        contentType: String,
+        example: Any,
+        xmlRootName: String? = null,
+        xmlItemName: String? = null
+    ): String {
         return try {
             val mimeType = MimeType(contentType)
             val exampleResponse: String = when {
                 mimeType.compatibleWith(JSON_CONTENT_TYPE) -> MapUtil.jsonify(example)
                 YAML_CONTENT_TYPES.any { mimeType.compatibleWith(it) } -> YAML_MAPPER.writeValueAsString(example)
-                XML_CONTENT_TYPES.any { mimeType.compatibleWith(it) } -> XmlMapUtil.xmlify(example)
+                XML_CONTENT_TYPES.any { mimeType.compatibleWith(it) } -> XmlMapUtil.xmlify(example, xmlRootName, xmlItemName)
                 else -> {
                     LOGGER.warn("Unsupported response MIME type '{}' - returning example object as string", contentType)
                     example.toString()

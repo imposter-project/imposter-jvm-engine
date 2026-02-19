@@ -56,18 +56,32 @@ object XmlMapUtil {
         setSerializationInclusion(JsonInclude.Include.NON_NULL)
     }
 
-    fun xmlify(obj: Any?): String = obj?.let { serialiseXml(it) } ?: ""
+    fun xmlify(
+        obj: Any?,
+        rootName: String? = null,
+        itemName: String? = null
+    ): String = obj?.let { serialiseXml(it, rootName, itemName) } ?: ""
 
-    private fun serialiseXml(example: Any): String {
+    private fun serialiseXml(
+        example: Any,
+        rootName: String?,
+        itemName: String?
+    ): String {
         return when (example) {
             is List<*> -> {
-                XML_MAPPER.writer().withRootName("items")
-                    .writeValueAsString(mapOf("item" to example))
+                val wrapperName = rootName ?: DEFAULT_LIST_ROOT
+                val elementName = itemName ?: DEFAULT_LIST_ITEM
+                XML_MAPPER.writer().withRootName(wrapperName)
+                    .writeValueAsString(mapOf(elementName to example))
             }
             else -> {
-                XML_MAPPER.writer().withRootName("root")
+                XML_MAPPER.writer().withRootName(rootName ?: DEFAULT_ROOT)
                     .writeValueAsString(example)
             }
         }
     }
+
+    private const val DEFAULT_ROOT = "root"
+    private const val DEFAULT_LIST_ROOT = "items"
+    private const val DEFAULT_LIST_ITEM = "item"
 }

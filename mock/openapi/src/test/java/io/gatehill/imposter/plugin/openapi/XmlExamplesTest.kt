@@ -165,4 +165,65 @@ internal class XmlExamplesTest : BaseVerticleTest() {
         assertTrue(body.contains("\"name\""), "Response should contain JSON name key")
         assertFalse(body.contains("<root>"), "Response should not contain XML root element")
     }
+
+    @Test
+    fun testServeSchemaWithCustomXmlRootName() {
+        val body = RestAssured.given()
+            .log().ifValidationFails()
+            .accept(ContentType.XML)
+            .`when`().get("/xml/pets/named")
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_OK)
+            .contentType(ContentType.XML)
+            .extract().asString()
+
+        // Verify custom root element name from schema xml.name
+        assertTrue(body.contains("<Pet>"), "Response should use custom root element 'Pet'")
+        assertTrue(body.contains("<name>"), "Response should contain <name> element")
+        assertTrue(body.contains("<breed>Collie</breed>"), "Response should contain breed example value")
+        assertTrue(body.contains("</Pet>"), "Response should contain closing </Pet>")
+        assertFalse(body.contains("<root>"), "Response should not contain default <root>")
+    }
+
+    @Test
+    fun testServeSchemaArrayWithCustomXmlNames() {
+        val body = RestAssured.given()
+            .log().ifValidationFails()
+            .accept(ContentType.XML)
+            .`when`().get("/xml/pets/named-list")
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_OK)
+            .contentType(ContentType.XML)
+            .extract().asString()
+
+        // Verify custom wrapper and item names from schema xml.name
+        assertTrue(body.contains("<Pets>"), "Response should use custom wrapper element 'Pets'")
+        assertTrue(body.contains("<Pet>"), "Response should use custom item element 'Pet'")
+        assertTrue(body.contains("<name>"), "Response should contain <name> element")
+        assertTrue(body.contains("</Pets>"), "Response should contain closing </Pets>")
+        assertFalse(body.contains("<items>"), "Response should not contain default <items>")
+        assertFalse(body.contains("<item>"), "Response should not contain default <item>")
+    }
+
+    @Test
+    fun testServeInlineExampleWithCustomXmlRootName() {
+        val body = RestAssured.given()
+            .log().ifValidationFails()
+            .accept(ContentType.XML)
+            .`when`().get("/xml/pets/named-inline")
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpUtil.HTTP_OK)
+            .contentType(ContentType.XML)
+            .extract().asString()
+
+        // Verify custom root element name with inline example
+        assertTrue(body.contains("<Animal>"), "Response should use custom root element 'Animal'")
+        assertTrue(body.contains("<name>Buddy</name>"), "Response should contain inline name value")
+        assertTrue(body.contains("<id>1</id>"), "Response should contain inline id value")
+        assertTrue(body.contains("</Animal>"), "Response should contain closing </Animal>")
+        assertFalse(body.contains("<root>"), "Response should not contain default <root>")
+    }
 }

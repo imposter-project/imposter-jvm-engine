@@ -77,3 +77,63 @@ paths:
                     type: string
                   id:
                     type: integer
+  /xml/pets/named:
+    get:
+      operationId: getPetNamedXml
+      summary: Get pet with custom XML root element name from schema
+      responses:
+        '200':
+          description: pet response
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: Pet
+                properties:
+                  name:
+                    type: string
+                  id:
+                    type: integer
+                  breed:
+                    type: string
+                    example: Collie
+  /xml/pets/named-list:
+    get:
+      operationId: listPetsNamedXml
+      summary: List pets with custom XML element names from schema
+      responses:
+        '200':
+          description: pet list response
+          content:
+            application/xml:
+              schema:
+                type: array
+                xml:
+                  name: Pets
+                items:
+                  type: object
+                  xml:
+                    name: Pet
+                  properties:
+                    name:
+                      type: string
+                    id:
+                      type: integer
+  /xml/pets/named-inline:
+    get:
+      operationId: getPetNamedInlineXml
+      summary: Get pet with inline example and custom XML root name
+      responses:
+        '200':
+          description: pet response
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: Animal
+              example:
+                name: Buddy
+                id: 1
+                breed: Labrador

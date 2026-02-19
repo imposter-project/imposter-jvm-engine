@@ -134,12 +134,17 @@ class ExampleServiceImpl @Inject constructor(
 
         // fetch all examples
         responseContent.forEach { mimeTypeName: String, mediaType: MediaType ->
+            val xmlRootName = mediaType.schema?.xml?.name
+            val xmlItemName = if (mediaType.schema?.type == "array") {
+                mediaType.schema?.items?.xml?.name
+            } else null
+
             // Example field takes precedence, per spec:
             //  "The example field is mutually exclusive of the examples field."
             // See: https://github.com/OAI/OpenAPI-Specification/blob/3.0.1/versions/3.0.1.md#mediaTypeObject
             if (Objects.nonNull(mediaType.example)) {
                 val example = convertToInnerType(mediaType.example)
-                examples.add(ResponseEntities.of("inline example", mimeTypeName, example))
+                examples.add(ResponseEntities.of("inline example", mimeTypeName, example, null, xmlRootName, xmlItemName))
 
             } else if (Objects.nonNull(mediaType.examples)) {
                 mediaType.examples.forEach { (exampleName: String, example: Example) ->
@@ -148,7 +153,9 @@ class ExampleServiceImpl @Inject constructor(
                             "inline example",
                             mimeTypeName,
                             example,
-                            exampleName
+                            exampleName,
+                            xmlRootName,
+                            xmlItemName
                         )
                     )
                 }
@@ -293,7 +300,11 @@ class ExampleServiceImpl @Inject constructor(
         private val LOGGER = LogManager.getLogger(ExampleServiceImpl::class.java)
 
         private fun <T> convertToContentTypedExample(entry: ResponseEntities<T>): ContentTypedHolder<T> {
-            return ContentTypedHolder(entry.contentType, entry.item)
+            return ContentTypedHolder(
+                entry.contentType, entry.item,
+                xmlRootName = entry.xmlRootName,
+                xmlItemName = entry.xmlItemName
+            )
         }
     }
 }

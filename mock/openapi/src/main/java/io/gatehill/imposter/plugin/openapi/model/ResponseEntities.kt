@@ -47,7 +47,9 @@ class ResponseEntities<T> private constructor(
     val entityDescription: String,
     val contentType: String,
     val item: T,
-    val name: String?
+    val name: String?,
+    val xmlRootName: String? = null,
+    val xmlItemName: String? = null
 ) {
     companion object {
         fun <T> of(entityDescription: String, contentType: String, item: T): ResponseEntities<T> {
@@ -56,6 +58,17 @@ class ResponseEntities<T> private constructor(
 
         fun <T> of(entityDescription: String, contentType: String, item: T, name: String?): ResponseEntities<T> {
             return ResponseEntities(entityDescription, contentType, item, name)
+        }
+
+        fun <T> of(
+            entityDescription: String,
+            contentType: String,
+            item: T,
+            name: String?,
+            xmlRootName: String?,
+            xmlItemName: String?
+        ): ResponseEntities<T> {
+            return ResponseEntities(entityDescription, contentType, item, name, xmlRootName, xmlItemName)
         }
     }
 }
