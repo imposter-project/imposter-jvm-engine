@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024.
+ * Copyright (c) 2016-2024.
  *
  * This file is part of Imposter.
  *
@@ -40,35 +40,48 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Imposter.  If not, see <https://www.gnu.org/licenses/>.
  */
+package io.gatehill.imposter.plugin.openapi.util
 
-package io.gatehill.imposter.plugin.openapi.model
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
 
-class ResponseEntities<T> private constructor(
-    val entityDescription: String,
-    val contentType: String,
-    val item: T,
-    val name: String?,
-    val xmlRootName: String? = null,
-    val xmlItemName: String? = null
-) {
-    companion object {
-        fun <T> of(entityDescription: String, contentType: String, item: T): ResponseEntities<T> {
-            return of(entityDescription, contentType, item, null)
-        }
+/**
+ * XML serialisation utilities for OpenAPI responses.
+ */
+object XmlMapUtil {
+    @JvmField
+    val XML_MAPPER: XmlMapper = XmlMapper().apply {
+        enable(SerializationFeature.INDENT_OUTPUT)
+        setSerializationInclusion(JsonInclude.Include.NON_NULL)
+    }
 
-        fun <T> of(entityDescription: String, contentType: String, item: T, name: String?): ResponseEntities<T> {
-            return ResponseEntities(entityDescription, contentType, item, name)
-        }
+    fun xmlify(
+        obj: Any?,
+        rootName: String? = null,
+        itemName: String? = null
+    ): String = obj?.let { serialiseXml(it, rootName, itemName) } ?: ""
 
-        fun <T> of(
-            entityDescription: String,
-            contentType: String,
-            item: T,
-            name: String?,
-            xmlRootName: String?,
-            xmlItemName: String?
-        ): ResponseEntities<T> {
-            return ResponseEntities(entityDescription, contentType, item, name, xmlRootName, xmlItemName)
+    private fun serialiseXml(
+        example: Any,
+        rootName: String?,
+        itemName: String?
+    ): String {
+        return when (example) {
+            is List<*> -> {
+                val wrapperName = rootName ?: DEFAULT_LIST_ROOT
+                val elementName = itemName ?: DEFAULT_LIST_ITEM
+                XML_MAPPER.writer().withRootName(wrapperName)
+                    .writeValueAsString(mapOf(elementName to example))
+            }
+            else -> {
+                XML_MAPPER.writer().withRootName(rootName ?: DEFAULT_ROOT)
+                    .writeValueAsString(example)
+            }
         }
     }
+
+    private const val DEFAULT_ROOT = "root"
+    private const val DEFAULT_LIST_ROOT = "items"
+    private const val DEFAULT_LIST_ITEM = "item"
 }
