@@ -283,7 +283,11 @@ class ExampleServiceImpl @Inject constructor(
         is String, is Number -> example
         is Array<*>, is Collection<*>, is Map<*, *> -> example
         is Example -> example
-        is TreeNode -> MapUtil.JSON_MAPPER.treeToValue(example, Map::class.java)
+        is TreeNode -> if (example.isArray) {
+            MapUtil.JSON_MAPPER.treeToValue(example, List::class.java)
+        } else {
+            MapUtil.JSON_MAPPER.treeToValue(example, Map::class.java)
+        }
         else -> {
             LOGGER.trace("Unsupported inner type: {}", example::class.java)
         }
