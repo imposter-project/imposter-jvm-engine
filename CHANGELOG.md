@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.8.1] - 2026-02-28
+### Changed
+- chore(deps): bump actions/upload-artifact from 6 to 7
+
+### Fixed
+- fix: handle top-level array examples in OpenAPI specs (#739)
+
 ## [4.8.0] - 2026-02-15
 ### Added
 - feat: extend x-fake-data support to integer, number, and boolean types
