@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.9.0] - 2026-03-01
+### Added
+- feat(openapi): add XML response serialisation for application/xml
+
 ## [4.8.1] - 2026-02-28
 ### Changed
 - chore(deps): bump actions/upload-artifact from 6 to 7
