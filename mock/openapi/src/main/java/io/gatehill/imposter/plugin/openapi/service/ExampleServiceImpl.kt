@@ -44,7 +44,6 @@ package io.gatehill.imposter.plugin.openapi.service
 
 import com.fasterxml.jackson.core.TreeNode
 import com.google.common.base.Strings
-import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
@@ -70,7 +69,6 @@ import javax.inject.Inject
 class ExampleServiceImpl @Inject constructor(
     private val schemaService: SchemaService,
     private val responseTransmissionService: ResponseTransmissionService,
-    private val imposterConfig: ImposterConfig,
 ) : ExampleService {
 
     /**
@@ -133,7 +131,7 @@ class ExampleServiceImpl @Inject constructor(
         val examples: MutableList<ResponseEntities<Any>> = mutableListOf()
 
         // fetch all examples
-        responseContent.forEach { mimeTypeName: String, mediaType: MediaType ->
+        responseContent.forEach { (mimeTypeName: String, mediaType: MediaType) ->
             val xmlRootName = mediaType.schema?.xml?.name
             val xmlItemName = if (mediaType.schema?.type == "array") {
                 mediaType.schema?.items?.xml?.name
