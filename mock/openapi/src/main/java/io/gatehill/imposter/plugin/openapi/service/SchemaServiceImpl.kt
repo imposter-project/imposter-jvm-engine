@@ -84,7 +84,23 @@ class SchemaServiceImpl : SchemaService {
                 LogUtil.describeRequestShort(httpExchange),
                 example
         )
-        return ContentTypedHolder(schema.contentType, example)
+
+        val resolvedSchema = resolveSchema(spec, schema.value)
+        val xmlRootName = resolvedSchema?.xml?.name
+        val xmlItemName = if (resolvedSchema != null && (resolvedSchema.type == "array" || resolvedSchema is ArraySchema)) {
+            resolveSchema(spec, resolvedSchema.items)?.xml?.name
+        } else null
+
+        return ContentTypedHolder(
+            schema.contentType, example,
+            xmlRootName = xmlRootName,
+            xmlItemName = xmlItemName
+        )
+    }
+
+    private fun resolveSchema(spec: OpenAPI, schema: Schema<*>?): Schema<*>? {
+        if (schema == null) return null
+        return if (schema.`$ref` != null) RefUtil.lookupSchemaRef(spec, schema) else schema
     }
 
     private fun collectSchemaExample(spec: OpenAPI, schema: Schema<*>, propNameHint: String? = null): Any? {

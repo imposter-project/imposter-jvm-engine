@@ -49,5 +49,7 @@ package io.gatehill.imposter.plugin.openapi.model
  */
 class ContentTypedHolder<T>(
     val contentType: String,
-    val value: T
+    val value: T,
+    val xmlRootName: String? = null,
+    val xmlItemName: String? = null
 )

@@ -177,25 +177,6 @@ class ResponseTransmissionServiceImplTest {
     }
 
     @Test
-    fun `should handle unsupported content types`() {
-        val httpExchange = createMockHttpExchange()
-        val testData = mapOf("key" to "value")
-        val example = ContentTypedHolder("text/plain", testData)
-        
-        service.transmitExample(httpExchange, example)
-        
-        verify(httpExchange.response).putHeader("Content-Type", "text/plain")
-        
-        val responseCaptor = argumentCaptor<String>()
-        verify(httpExchange.response).end(responseCaptor.capture())
-        val response = responseCaptor.firstValue
-        
-        // Verify it's toString format (contains = but not quotes)
-        assertTrue(response.contains("key=value"))
-        assertFalse(response.contains("\""))
-    }
-
-    @Test
     fun `should handle null example value`() {
         val httpExchange = createMockHttpExchange()
         val example = ContentTypedHolder("application/json", null)
@@ -239,21 +220,104 @@ class ResponseTransmissionServiceImplTest {
     }
 
     @Test
-    fun `should not serialise as JSON for non-JSON content types`() {
+    fun `should serialise as XML for application xml`() {
         val httpExchange = createMockHttpExchange()
         val testData = mapOf("key" to "value")
         val example = ContentTypedHolder("application/xml", testData)
-        
+
         service.transmitExample(httpExchange, example)
-        
+
         verify(httpExchange.response).putHeader("Content-Type", "application/xml")
-        
+
         val responseCaptor = argumentCaptor<String>()
         verify(httpExchange.response).end(responseCaptor.capture())
         val response = responseCaptor.firstValue
-        
-        // Verify it's NOT JSON (toString format)
-        assertTrue(response.contains("key=value"))
+
+        // Verify it's XML format
+        assertTrue(response.contains("<root>"))
+        assertTrue(response.contains("<key>value</key>"))
+        assertTrue(response.contains("</root>"))
         assertFalse(response.contains("\"key\""))
+    }
+
+    @Test
+    fun `should serialise as XML for text xml`() {
+        val httpExchange = createMockHttpExchange()
+        val testData = mapOf("name" to "Buddy", "id" to 1)
+        val example = ContentTypedHolder("text/xml", testData)
+
+        service.transmitExample(httpExchange, example)
+
+        verify(httpExchange.response).putHeader("Content-Type", "text/xml")
+
+        val responseCaptor = argumentCaptor<String>()
+        verify(httpExchange.response).end(responseCaptor.capture())
+        val response = responseCaptor.firstValue
+
+        assertTrue(response.contains("<root>"))
+        assertTrue(response.contains("<name>Buddy</name>"))
+        assertTrue(response.contains("<id>1</id>"))
+        assertTrue(response.contains("</root>"))
+    }
+
+    @Test
+    fun `should serialise as XML for structured syntax suffix xml`() {
+        val httpExchange = createMockHttpExchange()
+        val testData = mapOf("key" to "value")
+        val example = ContentTypedHolder("application/vnd.api+xml", testData)
+
+        service.transmitExample(httpExchange, example)
+
+        verify(httpExchange.response).putHeader("Content-Type", "application/vnd.api+xml")
+
+        val responseCaptor = argumentCaptor<String>()
+        verify(httpExchange.response).end(responseCaptor.capture())
+        val response = responseCaptor.firstValue
+
+        assertTrue(response.contains("<root>"))
+        assertTrue(response.contains("<key>value</key>"))
+        assertTrue(response.contains("</root>"))
+    }
+
+    @Test
+    fun `should serialise list as XML`() {
+        val httpExchange = createMockHttpExchange()
+        val testList = listOf(mapOf("id" to 1, "name" to "Buddy"), mapOf("id" to 2, "name" to "Max"))
+        val example = ContentTypedHolder("application/xml", testList)
+
+        service.transmitExample(httpExchange, example)
+
+        verify(httpExchange.response).putHeader("Content-Type", "application/xml")
+
+        val responseCaptor = argumentCaptor<String>()
+        verify(httpExchange.response).end(responseCaptor.capture())
+        val response = responseCaptor.firstValue
+
+        assertTrue(response.contains("<items>"))
+        assertTrue(response.contains("<item>"))
+        assertTrue(response.contains("<id>1</id>"))
+        assertTrue(response.contains("<name>Buddy</name>"))
+        assertTrue(response.contains("<id>2</id>"))
+        assertTrue(response.contains("<name>Max</name>"))
+        assertTrue(response.contains("</items>"))
+    }
+
+    @Test
+    fun `should handle unsupported content types`() {
+        val httpExchange = createMockHttpExchange()
+        val testData = mapOf("key" to "value")
+        val example = ContentTypedHolder("text/plain", testData)
+
+        service.transmitExample(httpExchange, example)
+
+        verify(httpExchange.response).putHeader("Content-Type", "text/plain")
+
+        val responseCaptor = argumentCaptor<String>()
+        verify(httpExchange.response).end(responseCaptor.capture())
+        val response = responseCaptor.firstValue
+
+        // Verify it's toString format (contains = but not quotes)
+        assertTrue(response.contains("key=value"))
+        assertFalse(response.contains("\""))
     }
 }

@@ -44,6 +44,7 @@ package io.gatehill.imposter.plugin.openapi.service
 
 import io.gatehill.imposter.http.HttpExchange
 import io.gatehill.imposter.plugin.openapi.model.ContentTypedHolder
+import io.gatehill.imposter.plugin.openapi.util.XmlMapUtil
 import io.gatehill.imposter.util.HttpUtil.CONTENT_TYPE
 import io.gatehill.imposter.util.LogUtil
 import io.gatehill.imposter.util.MapUtil
@@ -66,7 +67,7 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
             httpExchange.response.end()
             return
         }
-        val exampleResponse = buildExampleResponse(example.contentType, example.value)
+        val exampleResponse = buildExampleResponse(example)
         if (LOGGER.isTraceEnabled) {
             LOGGER.trace(
                 "Serving mock example for {} with status code {}: {}",
@@ -87,19 +88,19 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
     /**
      * Construct a response body from the example, based on the content type.
      *
-     * @param contentType the content type
-     * @param example     the example candidate - may be strongly typed [Example], map, list, or raw
+     * @param holder the example holder, where the value may be a strongly typed [Example], map, list, or raw
      * @return the [String] representation of the example entry
      */
-    private fun buildExampleResponse(contentType: String, example: Any?): String? {
-        return when (example) {
+    private fun <T> buildExampleResponse(holder: ContentTypedHolder<T>): String? {
+        return when (val example = holder.value) {
             is Example -> {
                 example.value?.toString()
             }
             is List<*> -> {
-                serialiseList(contentType, example)
+                @Suppress("UNCHECKED_CAST")
+                serialiseList(holder as ContentTypedHolder<List<*>>)
             }
-            else -> (example as? Map<*, *>)?.let { serialise(contentType, it) }
+            else -> (example as? Map<*, *>)?.let { serialise(holder.contentType, it, holder.xmlRootName, holder.xmlItemName) }
                 ?: if (example is String) {
                     example
                 } else {
@@ -115,13 +116,12 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
     /**
      * Serialises the list according to the content type.
      *
-     * @param contentType the content type
-     * @param example     a [List] to be serialised
+     * @param holder the example holder, where the value may be a strongly typed [Example], map, list, or raw
      * @return the serialised list
      */
-    private fun serialiseList(contentType: String, example: List<*>): String {
-        val transformedList = transformListForSerialisation(example)
-        return serialise(contentType, transformedList)
+    private fun serialiseList(holder: ContentTypedHolder<List<*>>): String {
+        val transformedList = transformListForSerialisation(holder.value)
+        return serialise(holder.contentType, transformedList, holder.xmlRootName, holder.xmlItemName)
     }
 
     /**
@@ -161,12 +161,18 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
      * @param example     an object to be serialised
      * @return the serialisation
      */
-    private fun serialise(contentType: String, example: Any): String {
+    private fun serialise(
+        contentType: String,
+        example: Any,
+        xmlRootName: String? = null,
+        xmlItemName: String? = null
+    ): String {
         return try {
             val mimeType = MimeType(contentType)
             val exampleResponse: String = when {
                 mimeType.compatibleWith(JSON_CONTENT_TYPE) -> MapUtil.jsonify(example)
                 YAML_CONTENT_TYPES.any { mimeType.compatibleWith(it) } -> YAML_MAPPER.writeValueAsString(example)
+                XML_CONTENT_TYPES.any { mimeType.compatibleWith(it) } -> XmlMapUtil.xmlify(example, xmlRootName, xmlItemName)
                 else -> {
                     LOGGER.warn("Unsupported response MIME type '{}' - returning example object as string", contentType)
                     example.toString()
@@ -193,6 +199,8 @@ class ResponseTransmissionServiceImpl : ResponseTransmissionService {
         private val LOGGER = LogManager.getLogger(ResponseTransmissionServiceImpl::class.java)
         private val JSON_CONTENT_TYPE = MimeType("application/json")
         private val YAML_CONTENT_TYPES = setOf("text/x-yaml", "application/yaml", "application/x-yaml")
+            .map { MimeType(it) }
+        private val XML_CONTENT_TYPES = setOf("application/xml", "text/xml")
             .map { MimeType(it) }
     }
 }
