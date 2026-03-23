@@ -42,10 +42,6 @@
  */
 package io.gatehill.imposter.store.dynamodb
 
-import com.amazonaws.SDKGlobalConfiguration
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.dynamodbv2.model.AttributeValue
-import com.amazonaws.services.dynamodbv2.model.GetItemRequest
 import io.gatehill.imposter.ImposterConfig
 import io.gatehill.imposter.service.DeferredOperationService
 import io.gatehill.imposter.store.dynamodb.support.DynamoDBStoreTestHelper
@@ -58,6 +54,8 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.testcontainers.localstack.LocalStackContainer
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest
 import java.nio.file.Files
 
 /**
@@ -79,7 +77,7 @@ class DynamoDBStoreTtlTest {
             // These tests need Docker
             TestEnvironmentUtil.assumeDockerAccessible()
 
-            System.setProperty(SDKGlobalConfiguration.AWS_REGION_SYSTEM_PROPERTY, Regions.US_EAST_1.name)
+            System.setProperty("aws.region", "us-east-1")
 
             dynamo = helper.startDynamoDb(
                 mapOf(
@@ -119,20 +117,20 @@ class DynamoDBStoreTtlTest {
         store.save("foo", "bar")
 
         val item = helper.ddb.getItem(
-            GetItemRequest().withTableName("TtlTest").withKey(
+            GetItemRequest.builder().tableName("TtlTest").key(
                 mapOf(
-                    "StoreName" to AttributeValue().withS("ttltest"),
-                    "Key" to AttributeValue().withS("foo")
+                    "StoreName" to AttributeValue.builder().s("ttltest").build(),
+                    "Key" to AttributeValue.builder().s("foo").build()
                 )
-            )
+            ).build()
         )
 
-        assertNotNull(item?.item, "Item should exist")
+        assertTrue(item.hasItem(), "Item should exist")
 
-        val ttlAttribute = item.item["ttl"]
+        val ttlAttribute = item.item()["ttl"]
         assertNotNull(ttlAttribute, "TTL attribute should exist")
 
-        val ttlValue = ttlAttribute!!.n
+        val ttlValue = ttlAttribute!!.n()
         assertNotNull(ttlValue, "TTL should be set to number")
         assertTrue(ttlValue.toLong() >= (persistenceTime + ttlSeconds), "TTL should be persistence time + configured value")
     }

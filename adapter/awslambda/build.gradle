@@ -41,8 +41,8 @@ dependencies {
     testImplementation "org.testcontainers:testcontainers:$version_testcontainers"
     testImplementation "org.testcontainers:testcontainers-localstack:$version_testcontainers"
 
-    testImplementation platform ("com.amazonaws:aws-java-sdk-bom:$version_aws_sdk")
-    testImplementation 'com.amazonaws:aws-java-sdk-s3'
+    testImplementation platform ("software.amazon.awssdk:bom:$version_aws_sdk")
+    testImplementation 'software.amazon.awssdk:s3'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

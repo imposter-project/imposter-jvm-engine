@@ -42,10 +42,6 @@
  */
 package io.gatehill.imposter.store.dynamodb
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.client.builder.AwsClientBuilder
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
 import com.google.inject.Inject
 import io.gatehill.imposter.plugin.Plugin
 import io.gatehill.imposter.plugin.PluginInfo
@@ -55,6 +51,10 @@ import io.gatehill.imposter.store.core.Store
 import io.gatehill.imposter.store.dynamodb.config.Settings
 import io.gatehill.imposter.store.factory.AbstractStoreFactory
 import org.apache.logging.log4j.LogManager
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import java.net.URI
 
 /**
  * @author Pete Cornish
@@ -69,18 +69,16 @@ class DynamoDBStoreFactoryImpl @Inject constructor(
     /**
      * Don't initialize until first use.
      */
-    private val ddb: AmazonDynamoDB by lazy { buildClient() }
+    private val ddb: DynamoDbClient by lazy { buildClient() }
 
-    private fun buildClient(): AmazonDynamoDB {
-        val builder = AmazonDynamoDBClientBuilder.standard()
+    private fun buildClient(): DynamoDbClient {
+        val builder = DynamoDbClient.builder()
         Settings.dynamoDbApiEndpoint?.let {
-            val endpointConfig = AwsClientBuilder.EndpointConfiguration(Settings.dynamoDbApiEndpoint, Settings.dynamoDbRegion)
-            builder.withEndpointConfiguration(endpointConfig)
-        } ?: run {
-            builder.withRegion(Settings.dynamoDbRegion)
+            builder.endpointOverride(URI.create(it))
         }
+        builder.region(Region.of(Settings.dynamoDbRegion))
         Settings.awsCredentials?.let {
-            builder.withCredentials(AWSStaticCredentialsProvider(it))
+            builder.credentialsProvider(StaticCredentialsProvider.create(it))
         }
         return builder.build()
     }

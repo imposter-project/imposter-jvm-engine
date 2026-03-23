@@ -42,15 +42,15 @@
  */
 package io.gatehill.imposter.config
 
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
-import com.amazonaws.regions.DefaultAwsRegionProviderChain
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.gatehill.imposter.config.util.EnvVars.Companion.getEnv
 import org.apache.logging.log4j.LogManager
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.stream.Collectors
 
@@ -60,15 +60,14 @@ import java.util.stream.Collectors
  * @author Pete Cornish
  */
 class S3FileDownloader private constructor() {
-    private val s3client: AmazonS3
+    private val s3client: S3Client
 
     init {
-        val clientBuilder = AmazonS3ClientBuilder.standard().enablePathStyleAccess()
+        val clientBuilder = S3Client.builder()
+            .forcePathStyle(true)
         System.getProperty(SYS_PROP_S3_API_ENDPOINT, getEnv(ENV_S3_API_ENDPOINT))
             ?.let { s3Endpoint: String ->
-                clientBuilder.withEndpointConfiguration(
-                    EndpointConfiguration(s3Endpoint, DefaultAwsRegionProviderChain().region)
-                )
+                clientBuilder.endpointOverride(URI.create(s3Endpoint))
             }
         s3client = clientBuilder.build()
     }
@@ -82,7 +81,12 @@ class S3FileDownloader private constructor() {
             val bucketName = determineBucketName(s3Url)
             val keyName = determineObjectKeyPrefix(s3Url)
 
-            val content: String = s3client.getObject(bucketName, keyName).objectContent.use { s3is ->
+            val content: String = s3client.getObject(
+                GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(keyName)
+                    .build()
+            ).use { s3is ->
                 BufferedReader(InputStreamReader(s3is, StandardCharsets.UTF_8))
                     .lines()
                     .collect(Collectors.joining("\n"))
@@ -106,8 +110,13 @@ class S3FileDownloader private constructor() {
             val bucketName = determineBucketName(s3Url)
             val keyName = determineObjectKeyPrefix(s3Url)
 
-            val objects = s3client.listObjectsV2(bucketName, keyName).objectSummaries
-                .map { it.key.substring(keyName.length) }
+            val objects = s3client.listObjectsV2(
+                ListObjectsV2Request.builder()
+                    .bucket(bucketName)
+                    .prefix(keyName)
+                    .build()
+            ).contents()
+                .map { it.key().substring(keyName.length) }
 
             LOGGER.debug("Found ${objects.size} objects in S3: $s3Url: $objects")
             return objects

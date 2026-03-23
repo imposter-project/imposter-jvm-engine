@@ -20,8 +20,8 @@ dependencies {
     implementation 'jakarta.activation:jakarta.activation-api:2.1.3'
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$version_jackson"
 
-    implementation platform("com.amazonaws:aws-java-sdk-bom:$version_aws_sdk")
-    implementation 'com.amazonaws:aws-java-sdk-s3'
+    implementation platform("software.amazon.awssdk:bom:$version_aws_sdk")
+    implementation 'software.amazon.awssdk:s3'
 
     // test
     testImplementation project(':test:test-utils')

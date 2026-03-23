@@ -42,18 +42,18 @@
  */
 package io.gatehill.imposter.store.dynamodb.config
 
-import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.auth.BasicSessionCredentials
-import com.amazonaws.regions.DefaultAwsRegionProviderChain
 import io.gatehill.imposter.config.util.EnvVars
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.AwsCredentials
+import software.amazon.awssdk.auth.credentials.AwsSessionCredentials
+import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain
 import java.util.Objects.isNull
 
 /**
  * @author Pete Cornish
  */
 internal object Settings {
-    val awsCredentials: AWSCredentials?
+    val awsCredentials: AwsCredentials?
         get() {
             val accessKey = EnvVars.getEnv("AWS_ACCESS_KEY_ID")
             val secretKey = EnvVars.getEnv("AWS_SECRET_ACCESS_KEY")
@@ -62,9 +62,9 @@ internal object Settings {
             }
             val sessionKey = EnvVars.getEnv("AWS_SESSION_TOKEN")
             return sessionKey?.let {
-                BasicSessionCredentials(accessKey, secretKey, sessionKey)
+                AwsSessionCredentials.create(accessKey, secretKey, sessionKey)
             } ?: run {
-                BasicAWSCredentials(accessKey, secretKey)
+                AwsBasicCredentials.create(accessKey, secretKey)
             }
         }
 
@@ -72,7 +72,7 @@ internal object Settings {
         get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_ENDPOINT")
 
     val dynamoDbRegion: String
-        get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_REGION") ?: DefaultAwsRegionProviderChain().region
+        get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_REGION") ?: DefaultAwsRegionProviderChain().region.id()
 
     val tableName: String
         get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_TABLE") ?: "Imposter"

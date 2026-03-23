@@ -1,11 +1,11 @@
-import com.amazonaws.auth.profile.ProfileCredentialsProvider
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider
 
 buildscript {
     repositories {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.amazonaws:aws-java-sdk-core:1.12.797'
+        classpath 'software.amazon.awssdk:auth:2.42.18'
     }
 }
 
@@ -17,7 +17,7 @@ ext {
     kotlin_version = '2.3.10'
 
     try {
-        awsCredentials = new ProfileCredentialsProvider().credentials
+        awsCredentials = ProfileCredentialsProvider.create().resolveCredentials()
     } catch(ignored) {
         awsCredentials = null
     }
@@ -25,11 +25,11 @@ ext {
     mavenSnapshotRepository = 's3://gatehillsoftware-maven/snapshots'
     mavenReleaseRepository = 's3://gatehillsoftware-maven/releases'
 
-    awsAccessKey = awsCredentials?.AWSAccessKeyId ?: System.getenv('AWS_ACCESS_KEY_ID') ?: project.findProperty('AWS_ACCESS_KEY_ID')
-    awsSecretKey = awsCredentials?.AWSSecretKey ?: System.getenv('AWS_SECRET_ACCESS_KEY') ?: project.findProperty('AWS_SECRET_ACCESS_KEY')
+    awsAccessKey = awsCredentials?.accessKeyId() ?: System.getenv('AWS_ACCESS_KEY_ID') ?: project.findProperty('AWS_ACCESS_KEY_ID')
+    awsSecretKey = awsCredentials?.secretAccessKey() ?: System.getenv('AWS_SECRET_ACCESS_KEY') ?: project.findProperty('AWS_SECRET_ACCESS_KEY')
 
     version_args4j = '2.33'
-    version_aws_sdk = '1.12.797'
+    version_aws_sdk = '2.42.18'
     version_coroutines = '1.10.2'
     version_hamcrest = '2.2'
     version_groovy = '4.0.26'

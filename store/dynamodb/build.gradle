@@ -10,8 +10,8 @@ compileJava {
 dependencies {
     implementation project(':store:store-common')
 
-    pluginImplementation platform("com.amazonaws:aws-java-sdk-bom:$version_aws_sdk")
-    pluginImplementation 'com.amazonaws:aws-java-sdk-dynamodb'
+    pluginImplementation platform("software.amazon.awssdk:bom:$version_aws_sdk")
+    pluginImplementation 'software.amazon.awssdk:dynamodb'
 
     // test
     testImplementation project(':test:test-utils')
