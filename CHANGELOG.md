@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.9.1] - 2026-03-23
+### Changed
+- chore(deps): bump com.amazonaws:aws-java-sdk-bom to 1.12.797
+
 ## [4.9.0] - 2026-03-01
 ### Added
 - feat(openapi): add XML response serialisation for application/xml
