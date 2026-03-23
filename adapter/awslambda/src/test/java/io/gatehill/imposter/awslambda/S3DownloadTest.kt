@@ -43,15 +43,9 @@
 
 package io.gatehill.imposter.awslambda
 
-import com.amazonaws.SDKGlobalConfiguration
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.client.builder.AwsClientBuilder
-import com.amazonaws.regions.Regions
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.gatehill.imposter.config.S3FileDownloader
 import org.testcontainers.localstack.LocalStackContainer
 import org.testcontainers.utility.DockerImageName
@@ -63,6 +57,13 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.mockito.Mockito
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import java.net.URI
 import java.nio.file.Paths
 
 /**
@@ -111,12 +112,12 @@ class S3DownloadTest {
                 .apply { start() }
 
             S3FileDownloader.destroyInstance()
-            System.setProperty(SDKGlobalConfiguration.AWS_REGION_SYSTEM_PROPERTY, Regions.US_EAST_1.name)
+            System.setProperty("aws.region", "us-east-1")
             System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.endpoint.toString())
             System.setProperty("aws.accessKeyId", "test")
-            System.setProperty("aws.secretKey", "test")
+            System.setProperty("aws.secretAccessKey", "test")
 
-            makeS3Client().createBucket("test")
+            makeS3Client().createBucket(CreateBucketRequest.builder().bucket("test").build())
 
             for (configFile in configFiles) {
                 uploadFileToS3("/simple/config", configFile)
@@ -128,17 +129,19 @@ class S3DownloadTest {
             )
         }
 
-        private fun makeS3Client() = AmazonS3ClientBuilder.standard()
-            .enablePathStyleAccess()
-            .withEndpointConfiguration(
-                AwsClientBuilder.EndpointConfiguration(s3Mock!!.endpoint.toString(), "us-east-1")
-            )
-            .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials("test", "test")))
+        private fun makeS3Client() = S3Client.builder()
+            .forcePathStyle(true)
+            .endpointOverride(URI.create(s3Mock!!.endpoint.toString()))
+            .region(Region.US_EAST_1)
+            .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
             .build()
 
         private fun uploadFileToS3(baseDir: String, filePath: String) {
             val specFilePath = Paths.get(S3DownloadTest::class.java.getResource("$baseDir/$filePath")!!.toURI())
-            makeS3Client().putObject("test", filePath, specFilePath.toFile())
+            makeS3Client().putObject(
+                PutObjectRequest.builder().bucket("test").key(filePath).build(),
+                specFilePath
+            )
         }
 
         @AfterAll
@@ -150,7 +153,7 @@ class S3DownloadTest {
             }
             System.clearProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT)
             System.clearProperty("aws.accessKeyId")
-            System.clearProperty("aws.secretKey")
+            System.clearProperty("aws.secretAccessKey")
             S3FileDownloader.destroyInstance()
         }
     }

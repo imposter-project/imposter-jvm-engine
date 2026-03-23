@@ -10,9 +10,9 @@ dependencies {
     implementation project(':core:imposter-api')
     implementation project(':core:config')
 
-    implementation platform("com.amazonaws:aws-java-sdk-bom:$version_aws_sdk")
-    implementation 'com.amazonaws:aws-java-sdk-s3'
-    implementation 'com.amazonaws:aws-java-sdk-sts'
+    implementation platform("software.amazon.awssdk:bom:$version_aws_sdk")
+    implementation 'software.amazon.awssdk:s3'
+    implementation 'software.amazon.awssdk:sts'
 
     // test
     testImplementation project(':test:test-utils')

@@ -42,23 +42,22 @@
  */
 package io.gatehill.imposter.store.dynamodb
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.model.AttributeValue
-import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest
-import com.amazonaws.services.dynamodbv2.model.GetItemRequest
-import com.amazonaws.services.dynamodbv2.model.PutItemRequest
-import com.amazonaws.services.dynamodbv2.model.QueryRequest
 import io.gatehill.imposter.service.DeferredOperationService
 import io.gatehill.imposter.store.core.AbstractStore
 import io.gatehill.imposter.store.dynamodb.config.Settings
 import io.gatehill.imposter.store.dynamodb.model.ResultWrapper
 import io.gatehill.imposter.util.MapUtil
 import org.apache.logging.log4j.LogManager
-import java.nio.ByteBuffer
+import software.amazon.awssdk.core.SdkBytes
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest
 import java.text.NumberFormat
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.util.Objects.nonNull
 
 /**
  * Store implementation using DynamoDB.
@@ -68,7 +67,7 @@ import java.util.Objects.nonNull
 class DynamoDBStore(
     deferredOperationService: DeferredOperationService,
     override val storeName: String,
-    private val ddb: AmazonDynamoDB,
+    private val ddb: DynamoDbClient,
     private val tableName: String,
 ) : AbstractStore(deferredOperationService) {
     override val typeDescription = "dynamodb"
@@ -84,37 +83,35 @@ class DynamoDBStore(
         val valueAttribute = convertToAttributeValue(value)
 
         val itemData = mutableMapOf(
-            "StoreName" to AttributeValue().withS(storeName),
-            "Key" to AttributeValue().withS(key),
+            "StoreName" to AttributeValue.builder().s(storeName).build(),
+            "Key" to AttributeValue.builder().s(key).build(),
             "Value" to valueAttribute
         )
         if (Settings.Ttl.enabled) {
-            itemData[Settings.Ttl.attributeName] = AttributeValue().withN(
+            itemData[Settings.Ttl.attributeName] = AttributeValue.builder().n(
                 LocalDateTime.now()
                     .plusSeconds(Settings.Ttl.seconds)
                     .toEpochSecond(ZoneOffset.UTC)
                     .toString()
-            )
+            ).build()
         }
-        ddb.putItem(PutItemRequest().withTableName(tableName).withItem(itemData))
+        ddb.putItem(PutItemRequest.builder().tableName(tableName).item(itemData).build())
     }
 
     private fun convertToAttributeValue(value: Any?): AttributeValue {
-        return AttributeValue().apply {
-            when (value) {
-                null -> withNULL(true)
-                is String -> withS(value.toString())
-                is Number -> withN(value.toString())
-                is Boolean -> withBOOL(value.toString().toBoolean())
-                is Map<*, *> -> withM(convertToDynamoMap(value))
-                else -> {
-                    when (Settings.objectSerialisation) {
-                        Settings.ObjectSerialisation.BINARY -> {
-                            withB(ByteBuffer.wrap(MapUtil.JSON_MAPPER.writeValueAsBytes(value)))
-                        }
-                        Settings.ObjectSerialisation.MAP -> {
-                            withM(convertToDynamoMap(value))
-                        }
+        return when (value) {
+            null -> AttributeValue.builder().nul(true).build()
+            is String -> AttributeValue.builder().s(value.toString()).build()
+            is Number -> AttributeValue.builder().n(value.toString()).build()
+            is Boolean -> AttributeValue.builder().bool(value.toString().toBoolean()).build()
+            is Map<*, *> -> AttributeValue.builder().m(convertToDynamoMap(value)).build()
+            else -> {
+                when (Settings.objectSerialisation) {
+                    Settings.ObjectSerialisation.BINARY -> {
+                        AttributeValue.builder().b(SdkBytes.fromByteArray(MapUtil.JSON_MAPPER.writeValueAsBytes(value))).build()
+                    }
+                    Settings.ObjectSerialisation.MAP -> {
+                        AttributeValue.builder().m(convertToDynamoMap(value)).build()
                     }
                 }
             }
@@ -124,29 +121,31 @@ class DynamoDBStore(
     override fun <T> load(key: String): T? {
         logger.trace("Loading item with key: {} from store: {}", key, storeName)
         val result = ddb.getItem(
-            GetItemRequest().withTableName(tableName).withKey(
+            GetItemRequest.builder().tableName(tableName).key(
                 mapOf(
-                    "StoreName" to AttributeValue().withS(storeName),
-                    "Key" to AttributeValue().withS(key)
+                    "StoreName" to AttributeValue.builder().s(storeName).build(),
+                    "Key" to AttributeValue.builder().s(key).build()
                 )
-            )
+            ).build()
         )
 
-        return result?.item?.let {
-            val (_, value) = destructure<T>(it)
-            return@let value
+        return if (result.hasItem()) {
+            val (_, value) = destructure<T>(result.item())
+            value
+        } else {
+            null
         }
     }
 
     override fun delete(key: String) {
         logger.trace("Deleting item with key: {} from store: {}", key, storeName)
         ddb.deleteItem(
-            DeleteItemRequest().withTableName(tableName).withKey(
+            DeleteItemRequest.builder().tableName(tableName).key(
                 mapOf(
-                    "StoreName" to AttributeValue().withS(storeName),
-                    "Key" to AttributeValue().withS(key)
+                    "StoreName" to AttributeValue.builder().s(storeName).build(),
+                    "Key" to AttributeValue.builder().s(key).build()
                 )
-            )
+            ).build()
         )
     }
 
@@ -158,21 +157,22 @@ class DynamoDBStore(
     override fun loadByKeyPrefix(keyPrefix: String): Map<String, Any?> {
         logger.trace("Loading items in store: $storeName with key prefix: $keyPrefix")
 
-        val query = QueryRequest().withTableName(tableName)
-            .withKeyConditionExpression("StoreName = :storeName AND begins_with(#k, :keyPrefix)")
-            .withExpressionAttributeNames(
+        val query = QueryRequest.builder().tableName(tableName)
+            .keyConditionExpression("StoreName = :storeName AND begins_with(#k, :keyPrefix)")
+            .expressionAttributeNames(
                 mapOf(
                     "#k" to "Key"
                 )
             )
-            .withExpressionAttributeValues(
+            .expressionAttributeValues(
                 mapOf(
-                    ":storeName" to AttributeValue().withS(storeName),
-                    ":keyPrefix" to AttributeValue().withS(keyPrefix),
+                    ":storeName" to AttributeValue.builder().s(storeName).build(),
+                    ":keyPrefix" to AttributeValue.builder().s(keyPrefix).build(),
                 )
             )
+            .build()
 
-        val items = ddb.query(query).items
+        val items = ddb.query(query).items()
         logger.trace("{} items found in store: $storeName with key prefix: $keyPrefix", items.size)
         return items.associate { destructure(it) }
     }
@@ -194,7 +194,7 @@ class DynamoDBStore(
     }
 
     private fun <T> destructure(attributeItem: Map<String, AttributeValue>): Pair<String, T?> {
-        val attributeKey = attributeItem.getValue("Key").s
+        val attributeKey = attributeItem.getValue("Key").s()
         val attributeValue = attributeItem.getValue("Value")
         return attributeKey to convertFromAttributeValue(attributeKey, attributeValue)
     }
@@ -204,12 +204,12 @@ class DynamoDBStore(
         attributeKey: String,
         attributeValue: AttributeValue,
     ): T? = when {
-        attributeValue.isNULL ?: false -> null
-        nonNull(attributeValue.s) -> attributeValue.s as T?
-        nonNull(attributeValue.bool) -> attributeValue.bool as T?
-        nonNull(attributeValue.n) -> NumberFormat.getInstance().parse(attributeValue.n) as T?
-        nonNull(attributeValue.b) -> MapUtil.JSON_MAPPER.readValue(attributeValue.b.array(), Map::class.java) as T?
-        nonNull(attributeValue.m) -> convertFromDynamoMap(attributeKey, attributeValue.m) as T?
+        attributeValue.nul() ?: false -> null
+        attributeValue.s() != null -> attributeValue.s() as T?
+        attributeValue.bool() != null -> attributeValue.bool() as T?
+        attributeValue.n() != null -> NumberFormat.getInstance().parse(attributeValue.n()) as T?
+        attributeValue.b() != null -> MapUtil.JSON_MAPPER.readValue(attributeValue.b().asByteArray(), Map::class.java) as T?
+        attributeValue.hasM() -> convertFromDynamoMap(attributeKey, attributeValue.m()) as T?
         else -> {
             logger.warn("Unable to read value of item: $attributeKey")
             null

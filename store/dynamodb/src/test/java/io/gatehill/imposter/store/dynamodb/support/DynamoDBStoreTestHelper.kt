@@ -42,21 +42,21 @@
  */
 package io.gatehill.imposter.store.dynamodb.support
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.client.builder.AwsClientBuilder
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
-import com.amazonaws.services.dynamodbv2.model.AttributeDefinition
-import com.amazonaws.services.dynamodbv2.model.CreateTableRequest
-import com.amazonaws.services.dynamodbv2.model.KeySchemaElement
-import com.amazonaws.services.dynamodbv2.model.KeyType
-import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
-import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.store.dynamodb.config.Settings
 import org.testcontainers.localstack.LocalStackContainer
 import org.testcontainers.utility.DockerImageName
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition
+import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest
+import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement
+import software.amazon.awssdk.services.dynamodb.model.KeyType
+import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
+import java.net.URI
 
 /**
  * Tests for DynamoDB store implementation.
@@ -64,7 +64,7 @@ import org.testcontainers.utility.DockerImageName
  * @author Pete Cornish
  */
 class DynamoDBStoreTestHelper {
-    lateinit var ddb: AmazonDynamoDB
+    lateinit var ddb: DynamoDbClient
 
     fun startDynamoDb(additionalEnv: Map<String, String> = emptyMap()): LocalStackContainer {
         val dynamo = LocalStackContainer(DockerImageName.parse("localstack/localstack:3"))
@@ -80,31 +80,37 @@ class DynamoDBStoreTestHelper {
             ) + additionalEnv
         )
 
-        ddb = AmazonDynamoDBClientBuilder.standard().withEndpointConfiguration(
-            AwsClientBuilder.EndpointConfiguration(Settings.dynamoDbApiEndpoint, Settings.dynamoDbRegion)
-        ).withCredentials(
-            AWSStaticCredentialsProvider(BasicAWSCredentials("dummy", "dummy"))
-        ).build()
+        ddb = DynamoDbClient.builder()
+            .endpointOverride(URI.create(Settings.dynamoDbApiEndpoint!!))
+            .region(Region.of(Settings.dynamoDbRegion))
+            .credentialsProvider(
+                StaticCredentialsProvider.create(AwsBasicCredentials.create("dummy", "dummy"))
+            )
+            .build()
 
         return dynamo
     }
 
     fun createTable(tableName: String) {
         val keySchema = listOf(
-            KeySchemaElement("StoreName", KeyType.HASH),
-            KeySchemaElement("Key", KeyType.RANGE),
+            KeySchemaElement.builder().attributeName("StoreName").keyType(KeyType.HASH).build(),
+            KeySchemaElement.builder().attributeName("Key").keyType(KeyType.RANGE).build(),
         )
         val attributeDefs = listOf(
-            AttributeDefinition("StoreName", ScalarAttributeType.S),
-            AttributeDefinition("Key", ScalarAttributeType.S),
+            AttributeDefinition.builder().attributeName("StoreName").attributeType(ScalarAttributeType.S).build(),
+            AttributeDefinition.builder().attributeName("Key").attributeType(ScalarAttributeType.S).build(),
         )
-        val request = CreateTableRequest(tableName, keySchema)
-            .withAttributeDefinitions(attributeDefs)
-            .withProvisionedThroughput(
-                ProvisionedThroughput()
-                    .withReadCapacityUnits(5L)
-                    .withWriteCapacityUnits(6L)
+        val request = CreateTableRequest.builder()
+            .tableName(tableName)
+            .keySchema(keySchema)
+            .attributeDefinitions(attributeDefs)
+            .provisionedThroughput(
+                ProvisionedThroughput.builder()
+                    .readCapacityUnits(5L)
+                    .writeCapacityUnits(6L)
+                    .build()
             )
+            .build()
 
         ddb.createTable(request)
     }

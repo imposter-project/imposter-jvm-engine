@@ -42,10 +42,10 @@
  */
 package io.gatehill.imposter.store.dynamodb.model
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.model.AttributeValue
-import com.amazonaws.services.dynamodbv2.model.QueryRequest
-import com.amazonaws.services.dynamodbv2.model.ScanRequest
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest
+import software.amazon.awssdk.services.dynamodb.model.ScanRequest
 
 /**
  * Wraps a scan or query operation and provides access to result items and count.
@@ -58,40 +58,42 @@ interface ResultWrapper {
         /**
          * Perform a scan operation on the given table identified by [tableName], with results filtered by [storeName].
          */
-        fun usingScan(ddb: AmazonDynamoDB, tableName: String, storeName: String): ResultWrapper {
+        fun usingScan(ddb: DynamoDbClient, tableName: String, storeName: String): ResultWrapper {
             val result = ddb.scan(
-                ScanRequest()
-                    .withTableName(tableName)
-                    .withFilterExpression("StoreName = :storeName")
-                    .withExpressionAttributeValues(mapOf(":storeName" to AttributeValue().withS(storeName)))
+                ScanRequest.builder()
+                    .tableName(tableName)
+                    .filterExpression("StoreName = :storeName")
+                    .expressionAttributeValues(mapOf(":storeName" to AttributeValue.builder().s(storeName).build()))
+                    .build()
             )
 
             return object : ResultWrapper {
                 override val items: List<Map<String, AttributeValue>>
-                    get() = result.items
+                    get() = result.items()
 
                 override val count: Int
-                    get() = result.count
+                    get() = result.count()
             }
         }
 
         /**
          * Perform a query operation on the given table identified by [tableName], with a key condition restricted by [storeName].
          */
-        fun usingQuery(ddb: AmazonDynamoDB, tableName: String, storeName: String): ResultWrapper {
+        fun usingQuery(ddb: DynamoDbClient, tableName: String, storeName: String): ResultWrapper {
             val result = ddb.query(
-                QueryRequest()
-                    .withTableName(tableName)
-                    .withKeyConditionExpression("StoreName = :storeName")
-                    .withExpressionAttributeValues(mapOf(":storeName" to AttributeValue().withS(storeName)))
+                QueryRequest.builder()
+                    .tableName(tableName)
+                    .keyConditionExpression("StoreName = :storeName")
+                    .expressionAttributeValues(mapOf(":storeName" to AttributeValue.builder().s(storeName).build()))
+                    .build()
             )
 
             return object : ResultWrapper {
                 override val items: List<Map<String, AttributeValue>>
-                    get() = result.items
+                    get() = result.items()
 
                 override val count: Int
-                    get() = result.count
+                    get() = result.count()
             }
         }
     }

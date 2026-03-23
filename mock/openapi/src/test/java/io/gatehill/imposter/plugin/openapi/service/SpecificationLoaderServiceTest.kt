@@ -42,12 +42,6 @@
  */
 package io.gatehill.imposter.plugin.openapi.service
 
-import com.amazonaws.SDKGlobalConfiguration
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.client.builder.AwsClientBuilder
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.gatehill.imposter.config.S3FileDownloader
 import org.testcontainers.localstack.LocalStackContainer
 import org.testcontainers.utility.DockerImageName
@@ -65,7 +59,14 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.net.ServerSocket
+import java.net.URI
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.CountDownLatch
@@ -92,7 +93,7 @@ class SpecificationLoaderServiceTest {
         }
         System.clearProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT)
         System.clearProperty("aws.accessKeyId")
-        System.clearProperty("aws.secretKey")
+        System.clearProperty("aws.secretAccessKey")
         S3FileDownloader.destroyInstance()
     }
 
@@ -155,12 +156,12 @@ class SpecificationLoaderServiceTest {
             .apply { start() }
 
         S3FileDownloader.destroyInstance()
-        System.setProperty(SDKGlobalConfiguration.AWS_REGION_SYSTEM_PROPERTY, Regions.US_EAST_1.name)
+        System.setProperty("aws.region", "us-east-1")
         System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.endpoint.toString())
         System.setProperty("aws.accessKeyId", "test")
-        System.setProperty("aws.secretKey", "test")
+        System.setProperty("aws.secretAccessKey", "test")
 
-        makeS3Client().createBucket("test")
+        makeS3Client().createBucket(CreateBucketRequest.builder().bucket("test").build())
 
         val specFilePath =
             Paths.get(
@@ -173,16 +174,18 @@ class SpecificationLoaderServiceTest {
         Assertions.assertEquals("Sample Petstore order service", spec.info.title, "title should match")
     }
 
-    private fun makeS3Client() = AmazonS3ClientBuilder.standard()
-        .enablePathStyleAccess()
-        .withEndpointConfiguration(
-            AwsClientBuilder.EndpointConfiguration(s3Mock!!.endpoint.toString(), "us-east-1")
-        )
-        .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials("test", "test")))
+    private fun makeS3Client() = S3Client.builder()
+        .forcePathStyle(true)
+        .endpointOverride(URI.create(s3Mock!!.endpoint.toString()))
+        .region(Region.US_EAST_1)
+        .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
         .build()
 
     private fun uploadFileToS3(specFilePath: Path): OpenApiPluginConfig {
-        makeS3Client().putObject("test", "order_service.yaml", specFilePath.toFile())
+        makeS3Client().putObject(
+            PutObjectRequest.builder().bucket("test").key("order_service.yaml").build(),
+            specFilePath
+        )
 
         val pluginConfig = OpenApiPluginConfig()
         pluginConfig.dir = specFilePath.parent.toFile()

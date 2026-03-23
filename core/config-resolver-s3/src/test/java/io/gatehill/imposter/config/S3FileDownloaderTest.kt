@@ -42,8 +42,6 @@
  */
 package io.gatehill.imposter.config
 
-import com.amazonaws.SDKGlobalConfiguration
-import com.amazonaws.regions.Regions
 import io.gatehill.imposter.config.support.TestSupport
 import io.gatehill.imposter.config.support.TestSupport.blockWait
 import io.gatehill.imposter.config.support.TestSupport.uploadFileToS3
@@ -72,10 +70,10 @@ class S3FileDownloaderTest {
         s3Mock = TestSupport.startLocalStack()
 
         S3FileDownloader.destroyInstance()
-        System.setProperty(SDKGlobalConfiguration.AWS_REGION_SYSTEM_PROPERTY, Regions.US_EAST_1.name)
+        System.setProperty("aws.region", "us-east-1")
         System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.endpoint.toString())
         System.setProperty("aws.accessKeyId", "test")
-        System.setProperty("aws.secretKey", "test")
+        System.setProperty("aws.secretAccessKey", "test")
 
         uploadFileToS3(s3Mock!!, "/config", "imposter-config.yaml")
         uploadFileToS3(s3Mock!!, "/config", "pet-api.yaml")
@@ -93,7 +91,7 @@ class S3FileDownloaderTest {
         }
         System.clearProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT)
         System.clearProperty("aws.accessKeyId")
-        System.clearProperty("aws.secretKey")
+        System.clearProperty("aws.secretAccessKey")
         S3FileDownloader.destroyInstance()
     }
 
