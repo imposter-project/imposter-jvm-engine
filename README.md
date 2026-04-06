@@ -110,6 +110,7 @@ For recent changes see the [Changelog](CHANGELOG.md), or view the [Roadmap](http
 
 ## Contributing
 
+- Issues can be raised in the [imposter](https://github.com/imposter-project/imposter/issues) repository.
 - Pull requests are welcome.
 - PRs should target the `develop` branch.
 
