@@ -16,7 +16,7 @@ dependencies {
     // test
     testImplementation project(':test:test-utils')
     testImplementation "org.testcontainers:testcontainers:$version_testcontainers"
-    testImplementation "org.testcontainers:testcontainers-localstack:$version_testcontainers"
+    testImplementation "org.ministack:testcontainers-ministack:$version_testcontainers_ministack"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

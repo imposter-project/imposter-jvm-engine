@@ -53,7 +53,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.testcontainers.localstack.LocalStackContainer
+import org.ministack.testcontainers.MiniStackContainer
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest
 import java.nio.file.Files
@@ -69,7 +69,7 @@ class DynamoDBStoreTtlTest {
     companion object {
         private const val ttlSeconds = 300
         private val helper = DynamoDBStoreTestHelper()
-        private var dynamo: LocalStackContainer? = null
+        private var dynamo: MiniStackContainer? = null
 
         @BeforeAll
         @JvmStatic

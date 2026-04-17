@@ -2,8 +2,7 @@ package io.gatehill.imposter.config.support
 
 import io.gatehill.imposter.config.S3FileDownloaderTest
 import io.vertx.core.Handler
-import org.testcontainers.localstack.LocalStackContainer
-import org.testcontainers.utility.DockerImageName
+import org.ministack.testcontainers.MiniStackContainer
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
@@ -16,25 +15,24 @@ import java.util.concurrent.CountDownLatch
 import java.util.function.Consumer
 
 object TestSupport {
-    fun startLocalStack(): LocalStackContainer {
-        val localStack = LocalStackContainer(DockerImageName.parse("localstack/localstack:3"))
-            .withServices("s3")
+    fun startMiniStack(): MiniStackContainer {
+        val miniStack = MiniStackContainer("1.2.20")
             .apply { start() }
-        makeS3Client(localStack).createBucket(CreateBucketRequest.builder().bucket("test").build())
-        return localStack
+        makeS3Client(miniStack).createBucket(CreateBucketRequest.builder().bucket("test").build())
+        return miniStack
     }
 
-    fun makeS3Client(localStack: LocalStackContainer): S3Client {
+    fun makeS3Client(miniStack: MiniStackContainer): S3Client {
         return S3Client.builder()
             .forcePathStyle(true)
-            .endpointOverride(URI.create(localStack.endpoint.toString()))
+            .endpointOverride(URI.create(miniStack.endpoint))
             .region(Region.US_EAST_1)
             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
             .build()
     }
 
-    fun uploadFileToS3(localStack: LocalStackContainer, baseDir: String, filePath: String) {
-        val s3 = makeS3Client(localStack)
+    fun uploadFileToS3(miniStack: MiniStackContainer, baseDir: String, filePath: String) {
+        val s3 = makeS3Client(miniStack)
 
         if (filePath.endsWith("/")) {
             s3.putObject(

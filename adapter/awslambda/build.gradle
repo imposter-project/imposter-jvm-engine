@@ -39,7 +39,7 @@ dependencies {
     testImplementation "org.mockito.kotlin:mockito-kotlin:$version_mockito_kotlin"
 
     testImplementation "org.testcontainers:testcontainers:$version_testcontainers"
-    testImplementation "org.testcontainers:testcontainers-localstack:$version_testcontainers"
+    testImplementation "org.ministack:testcontainers-ministack:$version_testcontainers_ministack"
 
     testImplementation platform ("software.amazon.awssdk:bom:$version_aws_sdk")
     testImplementation 'software.amazon.awssdk:s3'

@@ -44,8 +44,7 @@ package io.gatehill.imposter.store.dynamodb.support
 
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.store.dynamodb.config.Settings
-import org.testcontainers.localstack.LocalStackContainer
-import org.testcontainers.utility.DockerImageName
+import org.ministack.testcontainers.MiniStackContainer
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
@@ -66,12 +65,11 @@ import java.net.URI
 class DynamoDBStoreTestHelper {
     lateinit var ddb: DynamoDbClient
 
-    fun startDynamoDb(additionalEnv: Map<String, String> = emptyMap()): LocalStackContainer {
-        val dynamo = LocalStackContainer(DockerImageName.parse("localstack/localstack:3"))
-            .withServices("dynamodb")
+    fun startDynamoDb(additionalEnv: Map<String, String> = emptyMap()): MiniStackContainer {
+        val dynamo = MiniStackContainer("1.2.20")
             .apply { start() }
 
-        val dynamoDbEndpoint = dynamo.endpoint.toString()
+        val dynamoDbEndpoint = dynamo.endpoint
         EnvVars.populate(
             mapOf(
                 "IMPOSTER_DYNAMODB_ENDPOINT" to dynamoDbEndpoint,

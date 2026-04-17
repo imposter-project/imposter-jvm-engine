@@ -46,7 +46,7 @@ import io.gatehill.imposter.config.support.TestSupport
 import io.gatehill.imposter.config.support.TestSupport.blockWait
 import io.gatehill.imposter.config.support.TestSupport.uploadFileToS3
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
-import org.testcontainers.localstack.LocalStackContainer
+import org.ministack.testcontainers.MiniStackContainer
 import io.vertx.core.AsyncResult
 import io.vertx.core.Vertx
 import org.junit.jupiter.api.*
@@ -60,18 +60,18 @@ import java.nio.file.Files
  * @author Pete Cornish
  */
 class S3FileDownloaderTest {
-    private var s3Mock: LocalStackContainer? = null
+    private var s3Mock: MiniStackContainer? = null
 
     @BeforeEach
     fun setUp() {
         // These tests need Docker
         assumeDockerAccessible()
 
-        s3Mock = TestSupport.startLocalStack()
+        s3Mock = TestSupport.startMiniStack()
 
         S3FileDownloader.destroyInstance()
         System.setProperty("aws.region", "us-east-1")
-        System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.endpoint.toString())
+        System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.endpoint)
         System.setProperty("aws.accessKeyId", "test")
         System.setProperty("aws.secretAccessKey", "test")
 

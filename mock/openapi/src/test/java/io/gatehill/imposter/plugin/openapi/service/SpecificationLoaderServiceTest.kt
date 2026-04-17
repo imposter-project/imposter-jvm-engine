@@ -43,8 +43,7 @@
 package io.gatehill.imposter.plugin.openapi.service
 
 import io.gatehill.imposter.config.S3FileDownloader
-import org.testcontainers.localstack.LocalStackContainer
-import org.testcontainers.utility.DockerImageName
+import org.ministack.testcontainers.MiniStackContainer
 import io.gatehill.imposter.plugin.openapi.config.OpenApiPluginConfig
 import io.gatehill.imposter.service.FileCacheService
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
@@ -83,7 +82,7 @@ class SpecificationLoaderServiceTest {
         override fun writeToCache(cacheKey: String, content: String) {}
     }
     private val service = SpecificationLoaderService(noOpFileCacheService)
-    private var s3Mock: LocalStackContainer? = null
+    private var s3Mock: MiniStackContainer? = null
 
     @AfterEach
     fun tearDown() {
@@ -151,13 +150,12 @@ class SpecificationLoaderServiceTest {
         // These tests need Docker
         assumeDockerAccessible()
 
-        s3Mock = LocalStackContainer(DockerImageName.parse("localstack/localstack:3"))
-            .withServices("s3")
+        s3Mock = MiniStackContainer("1.2.20")
             .apply { start() }
 
         S3FileDownloader.destroyInstance()
         System.setProperty("aws.region", "us-east-1")
-        System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.endpoint.toString())
+        System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.endpoint)
         System.setProperty("aws.accessKeyId", "test")
         System.setProperty("aws.secretAccessKey", "test")
 
@@ -176,7 +174,7 @@ class SpecificationLoaderServiceTest {
 
     private fun makeS3Client() = S3Client.builder()
         .forcePathStyle(true)
-        .endpointOverride(URI.create(s3Mock!!.endpoint.toString()))
+        .endpointOverride(URI.create(s3Mock!!.endpoint))
         .region(Region.US_EAST_1)
         .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
         .build()

@@ -43,8 +43,9 @@ ext {
     version_micrometer = '1.11.3'
     version_mockito = '5.17.0'
     version_mockito_kotlin = '5.4.0'
-    version_localstack_image = '3'
     version_testcontainers = '2.0.3'
+    version_testcontainers_ministack = '0.1.0'
+    version_ministack_image = '1.2.20'
     version_vertx = '4.5.13'
 }
 
