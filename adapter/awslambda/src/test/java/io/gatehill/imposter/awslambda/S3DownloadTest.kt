@@ -47,8 +47,7 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event
 import io.gatehill.imposter.config.S3FileDownloader
-import org.testcontainers.localstack.LocalStackContainer
-import org.testcontainers.utility.DockerImageName
+import org.ministack.testcontainers.MiniStackContainer
 import io.gatehill.imposter.config.util.EnvVars
 import io.gatehill.imposter.util.TestEnvironmentUtil.assumeDockerAccessible
 import org.junit.jupiter.api.AfterAll
@@ -92,7 +91,7 @@ class S3DownloadTest {
     }
 
     companion object {
-        private var s3Mock: LocalStackContainer? = null
+        private var s3Mock: MiniStackContainer? = null
 
         val configFiles = arrayOf(
                 "imposter-config.yaml",
@@ -107,13 +106,12 @@ class S3DownloadTest {
             // These tests need Docker
             assumeDockerAccessible()
 
-            s3Mock = LocalStackContainer(DockerImageName.parse("localstack/localstack:3"))
-                .withServices("s3")
+            s3Mock = MiniStackContainer("1.2.20")
                 .apply { start() }
 
             S3FileDownloader.destroyInstance()
             System.setProperty("aws.region", "us-east-1")
-            System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.endpoint.toString())
+            System.setProperty(S3FileDownloader.SYS_PROP_S3_API_ENDPOINT, s3Mock!!.endpoint)
             System.setProperty("aws.accessKeyId", "test")
             System.setProperty("aws.secretAccessKey", "test")
 
@@ -131,7 +129,7 @@ class S3DownloadTest {
 
         private fun makeS3Client() = S3Client.builder()
             .forcePathStyle(true)
-            .endpointOverride(URI.create(s3Mock!!.endpoint.toString()))
+            .endpointOverride(URI.create(s3Mock!!.endpoint))
             .region(Region.US_EAST_1)
             .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
             .build()

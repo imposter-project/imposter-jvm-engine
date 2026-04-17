@@ -53,7 +53,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.testcontainers.localstack.LocalStackContainer
+import org.ministack.testcontainers.MiniStackContainer
 
 /**
  * Tests for DynamoDB store implementation.
@@ -65,7 +65,7 @@ class DynamoDBStoreFactoryImplTest : AbstractStoreFactoryTest() {
 
     companion object {
         private val helper = DynamoDBStoreTestHelper()
-        private var dynamo: LocalStackContainer? = null
+        private var dynamo: MiniStackContainer? = null
 
         @BeforeAll
         @JvmStatic
