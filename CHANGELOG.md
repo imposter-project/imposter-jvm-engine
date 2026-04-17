@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.9.2] - 2026-04-17
+### Changed
+- chore(deps): bump actions/github-script from 8 to 9
+- chore(deps): bump com.atlassian.oai:swagger-request-validator-core from 2.41.0 to 2.46.0
+- chore(deps): bump docker/setup-qemu-action from 3 to 4 (#19)
+- chore(deps): bump jackson from 2.18.3 to 2.21.0
+- chore(deps): bump org.mockito:mockito-core from 5.17.0 to 5.21.0
+- chore(deps): migrate test containers from LocalStack to MiniStack (1.2.20)
+- chore(deps): upgrade AWS SDK from v1 to v2 (2.42.18)
+- docs: link to issue tracker
+
 ## [4.9.1] - 2026-03-23
 ### Changed
 - chore(deps): bump com.amazonaws:aws-java-sdk-bom to 1.12.797
