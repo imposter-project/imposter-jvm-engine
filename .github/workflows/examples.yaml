@@ -37,6 +37,36 @@ jobs:
         run: |
           ./gradlew publishToMavenLocal --stacktrace -xtest
           echo "PUBLISHED_VERSION=$( cat gradle.properties | grep projectVersion= | cut -c16- )" >> $GITHUB_OUTPUT
+          JACKSON_VERSION=$( grep "version_jackson_databind" build.gradle | head -1 | sed "s/.*= '//;s/'.*//" )
+          echo "JACKSON_VERSION=${JACKSON_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Align Jackson version in example pom
+        working-directory: ./examples/junit-sample
+        run: |
+          # The sample pom pins jackson-databind to an older version. Once
+          # Imposter pulls in jackson-module-kotlin from a newer Jackson
+          # release, Maven's nearest-wins resolution leaves the runtime with
+          # a mismatched jackson-annotations (JsonProperty.isRequired()'s
+          # return type changed in 2.19+). Bump the sample's direct
+          # jackson-databind dependency to match what Imposter is built
+          # against so the example still builds against the published artifacts.
+          python3 - "${{ steps.publish-maven-local.outputs.JACKSON_VERSION }}" <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          target_version = sys.argv[1]
+          pom = Path("pom.xml")
+          original = pom.read_text()
+          pattern = re.compile(
+              r"(<artifactId>jackson-databind</artifactId>\s*<version>)[^<]+(</version>)"
+          )
+          updated, count = pattern.subn(rf"\g<1>{target_version}\g<2>", original)
+          if count == 0:
+              raise SystemExit("No jackson-databind <version> tag found in pom.xml")
+          pom.write_text(updated)
+          print(f"Aligned jackson-databind to {target_version}")
+          PY
 
       - name: Test JUnit example project
         working-directory: ./examples/junit-sample
