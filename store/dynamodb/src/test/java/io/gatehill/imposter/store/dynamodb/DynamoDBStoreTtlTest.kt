@@ -81,8 +81,8 @@ class DynamoDBStoreTtlTest {
 
             dynamo = helper.startDynamoDb(
                 mapOf(
-                    "IMPOSTER_DYNAMODB_TABLE" to "TtlTest",
-                    "IMPOSTER_DYNAMODB_TTL" to ttlSeconds.toString(),
+                    "IMPOSTER_STORE_DYNAMODB_TABLE" to "TtlTest",
+                    "IMPOSTER_STORE_DYNAMODB_TTL" to ttlSeconds.toString(),
                 )
             )
             helper.createTable("TtlTest")

@@ -77,8 +77,8 @@ class DynamoDBStoreFactoryImplTest : AbstractStoreFactoryTest() {
 
             dynamo = helper.startDynamoDb(
                 mapOf(
-                    "IMPOSTER_DYNAMODB_TABLE" to "Imposter",
-                    "IMPOSTER_DYNAMODB_TTL" to "-1",
+                    "IMPOSTER_STORE_DYNAMODB_TABLE" to "Imposter",
+                    "IMPOSTER_STORE_DYNAMODB_TTL" to "-1",
                 )
             )
             helper.createTable("Imposter")
@@ -104,7 +104,7 @@ class DynamoDBStoreFactoryImplTest : AbstractStoreFactoryTest() {
     @Test
     override fun testSaveLoadComplexItemBinary() {
         EnvVars.populate(
-            EnvVars.getEnv() + mapOf("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION" to Settings.ObjectSerialisation.BINARY.name)
+            EnvVars.getEnv() + mapOf("IMPOSTER_STORE_DYNAMODB_OBJECT_SERIALISATION" to Settings.ObjectSerialisation.BINARY.name)
         )
 
         val store = factory.buildNewStore("complex-binary")
@@ -124,7 +124,7 @@ class DynamoDBStoreFactoryImplTest : AbstractStoreFactoryTest() {
     @Test
     fun testSaveLoadComplexItemMap() {
         EnvVars.populate(
-            EnvVars.getEnv() + mapOf("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION" to Settings.ObjectSerialisation.MAP.name)
+            EnvVars.getEnv() + mapOf("IMPOSTER_STORE_DYNAMODB_OBJECT_SERIALISATION" to Settings.ObjectSerialisation.MAP.name)
         )
 
         val store = factory.buildNewStore("complex-map")

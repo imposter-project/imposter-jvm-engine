@@ -28,13 +28,16 @@ To activate the plugin set the following environment variable:
 
 The following variables can be set:
 
-| Environment variable                    | Purpose                                                                                                                   | Default                    |
-|-----------------------------------------|---------------------------------------------------------------------------------------------------------------------------|----------------------------|
-| IMPOSTER_DYNAMODB_OBJECT_SERIALISATION  | How to serialise objects; allowed values are `BINARY` or `MAP`.                                                           | `BINARY`                   |
-| IMPOSTER_DYNAMODB_REGION                | The region for the DynamoDB client.                                                                                       | Inferred from environment. |
-| IMPOSTER_DYNAMODB_TABLE                 | DynamoDB table name.                                                                                                      | `"Imposter"`               |
-| IMPOSTER_DYNAMODB_TTL                   | The number of seconds to use for item TTL.                                                                                | No TTL set.                |
-| IMPOSTER_DYNAMODB_TTL_ATTRIBUTE         | The name of TTL attribute in the table.                                                                                   | `ttl`                      |
+| Environment variable                          | Purpose                                                                                                                   | Default                    |
+|-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|----------------------------|
+| IMPOSTER_STORE_DYNAMODB_ENDPOINT              | Custom DynamoDB API endpoint.                                                                                             | None (uses AWS default).   |
+| IMPOSTER_STORE_DYNAMODB_OBJECT_SERIALISATION  | How to serialise objects; allowed values are `BINARY` or `MAP`.                                                           | `BINARY`                   |
+| IMPOSTER_STORE_DYNAMODB_REGION                | The region for the DynamoDB client.                                                                                       | Inferred from environment. |
+| IMPOSTER_STORE_DYNAMODB_TABLE                 | DynamoDB table name.                                                                                                      | `"Imposter"`               |
+| IMPOSTER_STORE_DYNAMODB_TTL                   | The number of seconds to use for item TTL.                                                                                | No TTL set.                |
+| IMPOSTER_STORE_DYNAMODB_TTL_ATTRIBUTE         | The name of TTL attribute in the table.                                                                                   | `ttl`                      |
+
+> **Note:** The legacy environment variable names without the `STORE_` prefix (e.g. `IMPOSTER_DYNAMODB_TABLE`) are still supported for backwards compatibility.
 
 ## DynamoDB set up
 
@@ -43,7 +46,7 @@ Create a DynamoDB table with the following configuration:
 * Partition key: `StoreName` (type String)
 * Sort key: `Key` (type String)
 
-By default, this table should be called `Imposter`. If you choose a different name, set the `IMPOSTER_DYNAMODB_TABLE` environment variable to match.
+By default, this table should be called `Imposter`. If you choose a different name, set the `IMPOSTER_STORE_DYNAMODB_TABLE` environment variable to match.
 
 ## Time to Live (TTL)
 
@@ -53,15 +56,15 @@ To use this, enable TTL for your table per the [AWS documentation](https://docs.
 
 Once you have enabled TTL (and allowed time for it to apply to your table), set the following environment variables:
 
-    IMPOSTER_DYNAMODB_TTL=<number of seconds>
-    IMPOSTER_DYNAMODB_TTL_ATTRIBUTE=<name of TTL attribute in table>
+    IMPOSTER_STORE_DYNAMODB_TTL=<number of seconds>
+    IMPOSTER_STORE_DYNAMODB_TTL_ATTRIBUTE=<name of TTL attribute in table>
 
-> By default, `IMPOSTER_DYNAMODB_TTL_ATTRIBUTE` is set to `ttl`.
+> By default, `IMPOSTER_STORE_DYNAMODB_TTL_ATTRIBUTE` is set to `ttl`.
 
 Example:
 
     # five minutes
-    IMPOSTER_DYNAMODB_TTL="300"
+    IMPOSTER_STORE_DYNAMODB_TTL="300"
     
     # name of TTL attribute
-    IMPOSTER_DYNAMODB_TTL_ATTRIBUTE="ttl"
+    IMPOSTER_STORE_DYNAMODB_TTL_ATTRIBUTE="ttl"

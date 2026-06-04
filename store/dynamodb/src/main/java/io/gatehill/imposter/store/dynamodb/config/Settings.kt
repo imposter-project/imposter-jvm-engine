@@ -69,16 +69,19 @@ internal object Settings {
         }
 
     val dynamoDbApiEndpoint: String?
-        get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_ENDPOINT")
+        get() = getEnvWithLegacyFallback("IMPOSTER_STORE_DYNAMODB_ENDPOINT", "IMPOSTER_DYNAMODB_ENDPOINT")
 
     val dynamoDbRegion: String
-        get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_REGION") ?: DefaultAwsRegionProviderChain().region.id()
+        get() = getEnvWithLegacyFallback("IMPOSTER_STORE_DYNAMODB_REGION", "IMPOSTER_DYNAMODB_REGION")
+            ?: DefaultAwsRegionProviderChain().region.id()
 
     val tableName: String
-        get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_TABLE") ?: "Imposter"
+        get() = getEnvWithLegacyFallback("IMPOSTER_STORE_DYNAMODB_TABLE", "IMPOSTER_DYNAMODB_TABLE")
+            ?: "Imposter"
 
     val objectSerialisation: ObjectSerialisation
-        get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_OBJECT_SERIALISATION")?.let { ObjectSerialisation.valueOf(it) }
+        get() = getEnvWithLegacyFallback("IMPOSTER_STORE_DYNAMODB_OBJECT_SERIALISATION", "IMPOSTER_DYNAMODB_OBJECT_SERIALISATION")
+            ?.let { ObjectSerialisation.valueOf(it) }
             ?: ObjectSerialisation.BINARY
 
     object Ttl {
@@ -89,11 +92,17 @@ internal object Settings {
 
         val seconds: Long
             get() {
-                return EnvVars.getEnv("IMPOSTER_DYNAMODB_TTL")?.toLong() ?: disabledValue
+                return getEnvWithLegacyFallback("IMPOSTER_STORE_DYNAMODB_TTL", "IMPOSTER_DYNAMODB_TTL")
+                    ?.toLong() ?: disabledValue
             }
 
         val attributeName: String
-            get() = EnvVars.getEnv("IMPOSTER_DYNAMODB_TTL_ATTRIBUTE") ?: "ttl"
+            get() = getEnvWithLegacyFallback("IMPOSTER_STORE_DYNAMODB_TTL_ATTRIBUTE", "IMPOSTER_DYNAMODB_TTL_ATTRIBUTE")
+                ?: "ttl"
+    }
+
+    private fun getEnvWithLegacyFallback(key: String, legacyKey: String): String? {
+        return EnvVars.getEnv(key) ?: EnvVars.getEnv(legacyKey)
     }
 
     enum class ObjectSerialisation {
