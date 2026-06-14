@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.9.3] - 2026-06-14
+### Changed
+- chore(deps): bump com.amazonaws:aws-lambda-java-tests from 1.1.1 to 1.1.2
+- chore(deps): bump com.frejo:force-rest-api from 0.0.45 to 0.0.46
+- chore(deps): bump org.openjdk.nashorn:nashorn-core from 15.4 to 15.7
+
+### Fixed
+- fix: apply basePath to interceptor paths (#25)
+
+### Other
+- Add STORE_ prefix to DynamoDB env vars with legacy fallback (#27)
+
 ## [4.9.2] - 2026-04-17
 ### Changed
 - chore(deps): bump actions/github-script from 8 to 9
