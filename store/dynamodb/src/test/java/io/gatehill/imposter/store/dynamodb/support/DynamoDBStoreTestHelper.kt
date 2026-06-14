@@ -72,7 +72,7 @@ class DynamoDBStoreTestHelper {
         val dynamoDbEndpoint = dynamo.endpoint
         EnvVars.populate(
             mapOf(
-                "IMPOSTER_DYNAMODB_ENDPOINT" to dynamoDbEndpoint,
+                "IMPOSTER_STORE_DYNAMODB_ENDPOINT" to dynamoDbEndpoint,
                 "AWS_ACCESS_KEY_ID" to "dummy",
                 "AWS_SECRET_ACCESS_KEY" to "dummy",
             ) + additionalEnv
