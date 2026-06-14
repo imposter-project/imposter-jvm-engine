@@ -31,7 +31,7 @@ dependencies {
 
     // test
     testImplementation project (':test:test-utils')
-    testImplementation 'com.amazonaws:aws-lambda-java-tests:1.1.1'
+    testImplementation 'com.amazonaws:aws-lambda-java-tests:1.1.2'
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:$version_junit_jupiter"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$version_junit_jupiter"
