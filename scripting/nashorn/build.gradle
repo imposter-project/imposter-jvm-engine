@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.gradleup.shadow'
 
 ext {
-    version_nashorn_core = '15.4'
+    version_nashorn_core = '15.7'
 }
 
 compileJava {
