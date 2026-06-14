@@ -9,3 +9,12 @@ resources:
   response:
     statusCode: 200
     content: "example"
+
+interceptors:
+# interceptor with a path should be prefixed with the base path
+- path: /intercepted
+  continue: true
+# interceptor without a path matches all requests and must not be prefixed
+- continue: true
+  response:
+    statusCode: 401

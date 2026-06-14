@@ -199,6 +199,14 @@ class ConfigUtilTest {
         )
         assertThat("empty root path should be prefixed with base path", config.path, not(startsWith("/base/")))
         assertThat("resource path should be prefixed with base path", config.resources?.first()?.path, startsWith("/base/"))
+
+        val pathInterceptor = config.interceptors?.find { it.path != null }
+        assertNotNull(pathInterceptor, "interceptor with a path should be set")
+        assertThat("interceptor path should be prefixed with base path", pathInterceptor?.path, equalTo("/base/intercepted"))
+
+        val matchAllInterceptor = config.interceptors?.find { it.path == null }
+        assertNotNull(matchAllInterceptor, "interceptor without a path should be set")
+        assertThat("interceptor without a path should not be prefixed", matchAllInterceptor?.path, nullValue())
     }
 
     /**

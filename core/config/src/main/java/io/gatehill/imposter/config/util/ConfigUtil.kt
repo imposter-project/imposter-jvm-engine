@@ -365,5 +365,14 @@ object ConfigUtil {
                 resource.path = basePath + (resource.path ?: "")
             }
         }
+        if (config is InterceptorsHolder<*>) {
+            config.interceptors?.forEach { interceptor ->
+                // an interceptor without a path matches all requests, so only
+                // prefix the base path when a path is actually configured
+                interceptor.path?.takeIf(String::isNotEmpty)?.let { path ->
+                    interceptor.path = basePath + path
+                }
+            }
+        }
     }
 }
