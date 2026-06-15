@@ -104,7 +104,7 @@ subprojects {
         dependencies {
             testImplementation "org.junit.jupiter:junit-jupiter-api:$version_junit_jupiter"
             testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$version_junit_jupiter"
-            testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
+            testRuntimeOnly "org.junit.platform:junit-platform-launcher:6.1.0"
         }
 
         project.archivesBaseName = project.name.startsWith('imposter-') ? project.name : 'imposter-' + project.name
